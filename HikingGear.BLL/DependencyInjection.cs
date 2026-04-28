@@ -14,6 +14,10 @@ namespace HikingGear.BLL
         public static IServiceCollection AddBusinessLogic(this IServiceCollection services)
         {
             services.AddHttpClient<IWeatherService, WeatherService>();
+            services.AddHttpClient<IGearGenerationService, GearGenerationService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ITripService, TripService>();
+            services.AddScoped<IGearItemService, GearItemService>();
 
             return services;
         }

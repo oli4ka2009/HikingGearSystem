@@ -1,5 +1,4 @@
 ﻿using HikingGear.BLL.DTOs;
-using HikingGear.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace HikingGear.BLL.Interfaces
 {
-    public interface IGearGenerationService
+    public interface IAuthService
     {
-        Task<AiGearResponseDto> GenerateGearListAsync(int tripId);
+        Task<AuthResponseDto> RegisterAsync(UserRegisterDto dto);
+        Task<AuthResponseDto> LoginAsync(UserLoginDto dto);
     }
 }

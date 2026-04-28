@@ -25,7 +25,7 @@ namespace HikingGear.Models.Entities
         public int Quantity { get; set; }
 
         public bool IsGroupGear { get; set; }
-
+        public bool IsWearable { get; set; }
         public bool IsPacked { get; set; }
     }
 }

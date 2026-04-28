@@ -35,5 +35,8 @@ namespace HikingGear.BLL.DTOs
 
         [JsonPropertyName("isGroupGear")]
         public bool IsGroupGear { get; set; }
+
+        [JsonPropertyName("isWearable")]
+        public bool IsWearable { get; set; }
     }
 }
