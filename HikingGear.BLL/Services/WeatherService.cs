@@ -22,34 +22,78 @@ namespace HikingGear.BLL.Services
                 ?? throw new InvalidOperationException("OpenWeatherMap API Key is missing.");
         }
 
-        public async Task<WeatherInfoDto> GetWeatherForLocationAsync(double lat, double lon)
+        public async Task<WeatherInfoDto> GetWeatherForLocationAsync(double lat, double lon, DateTime startDate, DateTime endDate)
         {
-            var url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={_apiKey}&units=metric";
+            var now = DateTime.UtcNow.Date;
+            var daysUntilStart = (startDate.Date - now).TotalDays;
+            var daysUntilEnd = (endDate.Date - now).TotalDays;
 
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
+            if (daysUntilStart > 5 || daysUntilEnd < 0)
             {
-                return new WeatherInfoDto { TempDay = 15, TempNight = 5, Description = "Unknown", WillRain = false };
+                return new WeatherInfoDto { IsForecastAvailable = false };
             }
 
-            var content = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(content);
-            var root = doc.RootElement;
+            var url = $"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={_apiKey}&units=metric";
 
-            var main = root.GetProperty("main");
-            var weatherArray = root.GetProperty("weather");
-            var description = weatherArray.GetArrayLength() > 0
-                ? weatherArray[0].GetProperty("description").GetString()
-                : "Clear";
-
-            return new WeatherInfoDto
+            try
             {
-                TempDay = main.GetProperty("temp_max").GetDouble(),
-                TempNight = main.GetProperty("temp_min").GetDouble(),
-                Description = description ?? "Unknown",
-                WillRain = content.Contains("rain", StringComparison.OrdinalIgnoreCase) || content.Contains("snow", StringComparison.OrdinalIgnoreCase)
-            };
+                var response = await _httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new WeatherInfoDto { IsForecastAvailable = false };
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(content);
+                var list = doc.RootElement.GetProperty("list");
+
+                var temps = new List<double>();
+                bool willRain = false;
+                string description = "Clear";
+
+                foreach (var item in list.EnumerateArray())
+                {
+                    var dtUnix = item.GetProperty("dt").GetInt64();
+                    var forecastDate = DateTimeOffset.FromUnixTimeSeconds(dtUnix).UtcDateTime.Date;
+
+                    if (forecastDate >= startDate.Date && forecastDate <= endDate.Date)
+                    {
+                        var main = item.GetProperty("main");
+                        temps.Add(main.GetProperty("temp").GetDouble());
+
+                        var weatherArray = item.GetProperty("weather");
+                        if (weatherArray.GetArrayLength() > 0)
+                        {
+                            var desc = weatherArray[0].GetProperty("description").GetString();
+
+                            if (desc != null && (desc.Contains("rain", StringComparison.OrdinalIgnoreCase) || desc.Contains("snow", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                willRain = true;
+                                description = desc;
+                            }
+                        }
+                    }
+                }
+
+                if (!temps.Any())
+                {
+                    return new WeatherInfoDto { IsForecastAvailable = false };
+                }
+
+                return new WeatherInfoDto
+                {
+                    TempDay = temps.Max(),
+                    TempNight = temps.Min(),
+                    Description = description,
+                    WillRain = willRain,
+                    IsForecastAvailable = true
+                };
+            }
+            catch
+            {
+                return new WeatherInfoDto { IsForecastAvailable = false };
+            }
         }
     }
 }

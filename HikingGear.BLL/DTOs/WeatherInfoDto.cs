@@ -12,5 +12,7 @@ namespace HikingGear.BLL.DTOs
         public double TempNight { get; set; }
         public string Description { get; set; } = string.Empty;
         public bool WillRain { get; set; }
+
+        public bool IsForecastAvailable { get; set; }
     }
 }

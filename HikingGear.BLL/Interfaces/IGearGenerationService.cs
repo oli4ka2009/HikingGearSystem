@@ -1,4 +1,5 @@
 ﻿using HikingGear.BLL.DTOs;
+using HikingGear.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace HikingGear.BLL.Interfaces
 {
-    public interface IWeatherService
+    public interface IGearGenerationService
     {
-        Task<WeatherInfoDto> GetWeatherForLocationAsync(double lat, double lon, DateTime startDate, DateTime endDate);
+        public Task<AiGearResponseDto> GenerateGearListAsync(Trip trip, WeatherInfoDto weather);
     }
 }
