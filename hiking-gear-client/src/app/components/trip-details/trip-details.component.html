@@ -1,0 +1,62 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button routerLink="/dashboard" aria-label="Назад до панелі керування">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span>Деталі походу #{{ tripId }}</span>
+</mat-toolbar>
+
+<div class="details-container">
+  <div class="actions-section">
+    <button mat-raised-button
+            color="primary"
+            class="generate-btn"
+            (click)="generateGear()"
+            [disabled]="isGenerating()">
+      @if (isGenerating()) {
+        <mat-spinner diameter="30"></mat-spinner>
+      } @else {
+        <span>
+          <mat-icon>list</mat-icon>
+          Згенерувати список спорядження
+        </span>
+      }
+    </button>
+  </div>
+
+  @if (gearList()) {
+    <div class="gear-list-section">
+      <h2 style="text-align: center;">Згенероване спорядження</h2>
+
+      <div class="cards-grid">
+        @for (category of gearList()?.categories; track category.categoryName) {
+          <mat-card style="margin-bottom: 20px;">
+            <mat-card-header>
+              <mat-card-title>{{ category.categoryName }}</mat-card-title>
+            </mat-card-header>
+
+            <mat-card-content>
+              <mat-list>
+                @for (item of category.items; track item.name) {
+                  <mat-list-item>
+                    <span matListItemTitle style="font-weight: 500;">{{ item.name }}</span>
+                    <span matListItemLine>
+                      Кількість: <strong>{{ item.quantity }} шт.</strong> |
+                      Вага: {{ item.weightInGrams }} г
+
+                      @if (item.isGroupGear) {
+                        <span style="color: #ff4081; margin-left: 8px;">(👥 Групове)</span>
+                      }
+                      @if (item.isWearable) {
+                        <span style="color: #3f51b5; margin-left: 8px;">(👕 На собі)</span>
+                      }
+                    </span>
+                  </mat-list-item>
+                }
+              </mat-list>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </div>
+  }
+</div>

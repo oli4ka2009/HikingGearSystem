@@ -42,6 +42,52 @@ namespace HikingGear.BLL.Services
         public async Task<AiGearResponseDto> GenerateGearListAsync(int tripId)
         {
             var trip = await GetValidTripAsync(tripId);
+
+            // ТИМЧАСОВА ЗАГЛУШКА (MOCK) ПОКИ GOOGLE ЛЕЖИТЬ
+            _logger.LogInformation("Використовуємо Mock-дані, бо Gemini API видає 503...");
+
+            // Імітуємо, що ШІ "думає" 2 секунди (щоб ти побачила свій спінер в Angular)
+            await Task.Delay(2000);
+
+            var mockDto = new AiGearResponseDto
+            {
+                Categories = new List<AiCategoryDto> // Перевір, як точно називається твій DTO для категорії
+        {
+            new AiCategoryDto
+            {
+                CategoryName = "Одяг (Mock)",
+                Items = new List<AiGearItemDto>
+                {
+                    new AiGearItemDto { Name = "Мембранна куртка", WeightInGrams = 450, Quantity = 1, IsGroupGear = false, IsWearable = true },
+                    new AiGearItemDto { Name = "Запасні шкарпетки", WeightInGrams = 50, Quantity = 2, IsGroupGear = false, IsWearable = false }
+                }
+            },
+            new AiCategoryDto
+            {
+                CategoryName = "Групове (Mock)",
+                Items = new List<AiGearItemDto>
+                {
+                    new AiGearItemDto { Name = "Намет 3-місний", WeightInGrams = 2500, Quantity = 1, IsGroupGear = true, IsWearable = false }
+                }
+            },
+            new AiCategoryDto
+            {
+                CategoryName = "Одяг (Mock)",
+                Items = new List<AiGearItemDto>
+                {
+                    new AiGearItemDto { Name = "Мембранна куртка", WeightInGrams = 450, Quantity = 1, IsGroupGear = false, IsWearable = true },
+                    new AiGearItemDto { Name = "Запасні шкарпетки", WeightInGrams = 50, Quantity = 2, IsGroupGear = false, IsWearable = false }
+                }
+            }
+        }
+            };
+
+            // Зберігаємо нашу заглушку в базу (і ПЕРЕВІРЯЄМО, чи затреться старий список!)
+            await SaveGeneratedGearAsync(tripId, mockDto);
+
+            return mockDto;
+
+            /*var trip = await GetValidTripAsync(tripId);
             var weather = await FetchWeatherAsync(trip);
 
             _logger.LogInformation("Отримано погоду для походу ID {TripId}: {WeatherData}",
@@ -55,7 +101,7 @@ namespace HikingGear.BLL.Services
 
             await SaveGeneratedGearAsync(tripId, generatedDto);
 
-            return generatedDto;
+            return generatedDto; */
         }
 
         private async Task SaveGeneratedGearAsync(int tripId, AiGearResponseDto dto)

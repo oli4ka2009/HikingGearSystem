@@ -12,17 +12,17 @@
 
   <div class="trips-grid">
     @for (trip of trips(); track trip.id) {
-      <mat-card class="trip-card">
+      <mat-card>
         <mat-card-header>
           <mat-card-title>{{ trip.title }}</mat-card-title>
-          <mat-card-subtitle>{{ trip.date | date }}</mat-card-subtitle>
+          <mat-card-subtitle>{{ trip.locationName }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <p>{{ trip.description }}</p>
-          <p><strong>Location:</strong> {{ trip.location }}</p>
+          <p><strong>Дати:</strong> {{ trip.startDate | date:'shortDate' }} - {{ trip.endDate | date:'shortDate' }}</p>
+          <p><strong>Група:</strong> {{ trip.groupSize }} осіб</p>
         </mat-card-content>
         <mat-card-actions>
-          <button mat-button color="primary">Details</button>
+          <button mat-button color="primary" [routerLink]="['/trips', trip.id]">Деталі</button>
         </mat-card-actions>
       </mat-card>
     } @empty {
