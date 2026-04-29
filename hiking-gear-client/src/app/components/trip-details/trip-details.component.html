@@ -5,6 +5,10 @@
   <span>Деталі походу #{{ tripId }}</span>
 </mat-toolbar>
 
+@if (packingProgress(); as progress) {
+  <mat-progress-bar mode="determinate" [value]="progress.progressPercentage"></mat-progress-bar>
+}
+
 <div class="details-container">
   <div class="actions-section">
     <button mat-raised-button
@@ -17,28 +21,91 @@
       } @else {
         <span>
           <mat-icon>list</mat-icon>
-          Згенерувати список спорядження
+          {{ gearList() ? 'Перегенерувати список' : 'Згенерувати список спорядження' }}
         </span>
       }
     </button>
   </div>
 
-  @if (gearList()) {
+  @if (packingProgress(); as progress) {
+    <div class="dashboard-progress">
+      <!-- Секція Вага -->
+      <mat-card class="progress-card">
+        <mat-card-header>
+          <mat-card-title>Вага (кг)</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="progress-line">
+            <span>Наплічник:</span>
+            <strong>{{ progress.individualPackWeightGrams / 1000 | number:'1.2-2' }}</strong>
+          </div>
+          <div class="progress-line">
+            <span>На собі:</span>
+            <strong>{{ progress.individualWornWeightGrams / 1000 | number:'1.2-2' }}</strong>
+          </div>
+          <div class="progress-line">
+            <span>Групове:</span>
+            <strong>{{ progress.groupTotalWeightGrams / 1000 | number:'1.2-2' }}</strong>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Секція Готовність -->
+      <mat-card class="progress-card">
+        <mat-card-header>
+          <mat-card-title>Готовність</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="progress-container">
+            <span class="progress-label">Загальний прогрес: {{ progress.progressPercentage }}%</span>
+            <mat-progress-bar mode="determinate" [value]="progress.progressPercentage"></mat-progress-bar>
+          </div>
+          <div class="sub-progress">
+            <span>Особисте: {{ progress.individualProgressPercentage }}%</span>
+            <span>Групове: {{ progress.groupProgressPercentage }}%</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Секція Кількість -->
+      <mat-card class="progress-card">
+        <mat-card-header>
+          <mat-card-title>Рюкзак</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="centered-content">
+          <div class="items-counter">
+            <span class="packed-count">{{ progress.packedItems }}</span>
+            <span class="separator">/</span>
+            <span class="total-count">{{ progress.totalItems }}</span>
+          </div>
+          <span class="counter-label">речей зібрано</span>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
     <div class="gear-list-section">
       <h2 style="text-align: center;">Згенероване спорядження</h2>
 
       <div class="cards-grid">
         @for (category of gearList()?.categories; track category.categoryName) {
-          <mat-card style="margin-bottom: 20px;">
+          <mat-card class="category-card">
             <mat-card-header>
               <mat-card-title>{{ category.categoryName }}</mat-card-title>
             </mat-card-header>
 
             <mat-card-content>
               <mat-list>
-                @for (item of category.items; track item.name) {
-                  <mat-list-item>
-                    <span matListItemTitle style="font-weight: 500;">{{ item.name }}</span>
+                @for (item of category.items; track item.id) {
+                  <mat-list-item [class.packed-item]="item.isPacked">
+                    <div matListItemTitle class="item-title-row">
+                      <mat-checkbox [checked]="item.isPacked"
+                                    (change)="togglePacked(item)">
+                        <span [class.line-through]="item.isPacked">{{ item.name }}</span>
+                      </mat-checkbox>
+                      <button mat-icon-button color="warn" (click)="deleteItem(item.id)" aria-label="Видалити">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
                     <span matListItemLine>
                       Кількість: <strong>{{ item.quantity }} шт.</strong> |
                       Вага: {{ item.weightInGrams }} г
@@ -54,6 +121,12 @@
                 }
               </mat-list>
             </mat-card-content>
+            <mat-card-actions>
+              <button mat-button color="primary" (click)="addItem(category.categoryName)">
+                <mat-icon>add</mat-icon>
+                Додати річ
+              </button>
+            </mat-card-actions>
           </mat-card>
         }
       </div>

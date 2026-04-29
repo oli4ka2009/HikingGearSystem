@@ -1,3 +1,100 @@
+.dashboard-progress {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 24px auto;
+}
+
+.progress-card {
+  flex: 1 1 300px;
+  min-width: 280px;
+  max-width: 380px;
+}
+
+.progress-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.progress-container {
+  margin-bottom: 12px;
+}
+
+.progress-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.sub-progress {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.centered-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.items-counter {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #3f51b5;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.separator {
+  color: #ccc;
+  font-weight: 300;
+  font-size: 1.8rem;
+}
+
+.total-count {
+  color: #999;
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.counter-label {
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.packed-item {
+  opacity: 0.6;
+}
+
+.packed-item .mdc-label,
+.packed-item span {
+  text-decoration: line-through;
+}
+
+.line-through {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.item-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
 .cards-grid {
   display: flex;
   flex-wrap: wrap;

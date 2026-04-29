@@ -10,6 +10,6 @@ namespace HikingGear.BLL.Interfaces
 {
     public interface IGearGenerationService
     {
-        Task<AiGearResponseDto> GenerateGearListAsync(int tripId);
+        Task<TripGearResponseDto> GenerateGearListAsync(int tripId);
     }
 }

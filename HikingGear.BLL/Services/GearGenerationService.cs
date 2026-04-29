@@ -39,7 +39,7 @@ namespace HikingGear.BLL.Services
             _gearItemRepository = gearItemRepository;
         }
 
-        public async Task<AiGearResponseDto> GenerateGearListAsync(int tripId)
+        public async Task<TripGearResponseDto> GenerateGearListAsync(int tripId)
         {
             var trip = await GetValidTripAsync(tripId);
 
@@ -69,15 +69,6 @@ namespace HikingGear.BLL.Services
                 {
                     new AiGearItemDto { Name = "Намет 3-місний", WeightInGrams = 2500, Quantity = 1, IsGroupGear = true, IsWearable = false }
                 }
-            },
-            new AiCategoryDto
-            {
-                CategoryName = "Одяг (Mock)",
-                Items = new List<AiGearItemDto>
-                {
-                    new AiGearItemDto { Name = "Мембранна куртка", WeightInGrams = 450, Quantity = 1, IsGroupGear = false, IsWearable = true },
-                    new AiGearItemDto { Name = "Запасні шкарпетки", WeightInGrams = 50, Quantity = 2, IsGroupGear = false, IsWearable = false }
-                }
             }
         }
             };
@@ -85,7 +76,27 @@ namespace HikingGear.BLL.Services
             // Зберігаємо нашу заглушку в базу (і ПЕРЕВІРЯЄМО, чи затреться старий список!)
             await SaveGeneratedGearAsync(tripId, mockDto);
 
-            return mockDto;
+            var savedItems = await _gearItemRepository.GetItemsByTripIdAsync(tripId);
+
+            return new TripGearResponseDto
+            {
+                Categories = savedItems
+        .GroupBy(i => i.Category.Name) // Переконайся, що Category завантажена через .Include()
+        .Select(g => new TripCategoryDto
+        {
+            CategoryName = g.Key,
+            Items = g.Select(i => new TripGearItemDto
+            {
+                Id = i.Id,
+                Name = i.Name,
+                WeightInGrams = i.WeightInGrams,
+                Quantity = i.Quantity,
+                IsGroupGear = i.IsGroupGear,
+                IsWearable = i.IsWearable,
+                IsPacked = i.IsPacked
+            }).ToList()
+        }).ToList()
+            };
 
             /*var trip = await GetValidTripAsync(tripId);
             var weather = await FetchWeatherAsync(trip);
