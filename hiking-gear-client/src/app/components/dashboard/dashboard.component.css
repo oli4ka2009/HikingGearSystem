@@ -1,0 +1,29 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.dashboard-content {
+  padding: 20px;
+}
+
+.trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+mat-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+mat-card-content {
+  flex-grow: 1;
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #333;
+}

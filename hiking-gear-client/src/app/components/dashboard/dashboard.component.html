@@ -1,0 +1,32 @@
+<mat-toolbar color="primary">
+  <span>Hiking Gear System</span>
+  <span class="spacer"></span>
+  <button mat-button (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    Logout
+  </button>
+</mat-toolbar>
+
+<div class="dashboard-content">
+  <h2>Available Trips</h2>
+
+  <div class="trips-grid">
+    @for (trip of trips(); track trip.id) {
+      <mat-card class="trip-card">
+        <mat-card-header>
+          <mat-card-title>{{ trip.title }}</mat-card-title>
+          <mat-card-subtitle>{{ trip.date | date }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>{{ trip.description }}</p>
+          <p><strong>Location:</strong> {{ trip.location }}</p>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-button color="primary">Details</button>
+        </mat-card-actions>
+      </mat-card>
+    } @empty {
+      <p>No trips available at the moment.</p>
+    }
+  </div>
+</div>

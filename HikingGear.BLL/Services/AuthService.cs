@@ -43,8 +43,17 @@ namespace HikingGear.BLL.Services
         {
             var user = await _userRepository.GetUserByEmailAsync(dto.Email);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
-                throw new UnauthorizedAccessException("Невірний Email або пароль.");
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("Невірний емейл або пароль");
+            }
+
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+
+            if (!isPasswordValid)
+            {
+                throw new UnauthorizedAccessException("Невірний емейл або пароль");
+            }
 
             string token = GenerateJwtToken(user);
 

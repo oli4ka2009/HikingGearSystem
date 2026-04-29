@@ -54,6 +54,18 @@ namespace HikingGear.API
                 });
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAngularFrontend",
+                    policy =>
+                    {
+                        policy.WithOrigins("http://localhost:4200")
+                              .AllowAnyHeader()                     
+                              .AllowAnyMethod()                     
+                              .AllowCredentials();                 
+                    });
+            });
+
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -83,8 +95,10 @@ namespace HikingGear.API
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseCors("AllowAngularFrontend");
 
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
 
