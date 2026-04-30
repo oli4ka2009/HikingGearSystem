@@ -35,5 +35,6 @@ namespace HikingGear.Models.Entities
         public SleepFormat AccommodationFormat { get; set; }
 
         public ICollection<GearItem> GearItems { get; set; } = new List<GearItem>();
+        public ICollection<GearCategory> Categories { get; set; } = new List<GearCategory>();
     }
 }

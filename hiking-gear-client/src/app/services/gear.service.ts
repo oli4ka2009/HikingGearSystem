@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 export interface GearItem {
   id: number;
@@ -21,6 +21,18 @@ export interface TripGearResponseDto {
   categories: GearCategory[];
 }
 
+// Тип який реально повертає API
+interface ApiGearItem {
+  id: number;
+  name: string;
+  quantity: number;
+  weightInGrams: number;
+  isGroupGear: boolean;
+  isWearable: boolean;
+  isPacked: boolean;
+  category: { id: number; name: string; gearItems: any[] };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -30,7 +42,31 @@ export class GearService {
   private readonly http = inject(HttpClient);
 
   getGearList(tripId: number): Observable<TripGearResponseDto> {
-    return this.http.get<TripGearResponseDto>(`${this.apiGearItemUrl}/trip/${tripId}`);
+    return this.http.get<ApiGearItem[]>(`${this.apiGearItemUrl}/trip/${tripId}`).pipe(
+      map(items => {
+        // Групуємо плаский масив по category.name
+        const grouped = new Map<string, GearItem[]>();
+        for (const item of items) {
+          const catName = item.category?.name ?? 'Інше';
+          if (!grouped.has(catName)) grouped.set(catName, []);
+          grouped.get(catName)!.push({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            weightInGrams: item.weightInGrams,
+            isGroupGear: item.isGroupGear,
+            isWearable: item.isWearable,
+            isPacked: item.isPacked,
+          });
+        }
+        return {
+          categories: Array.from(grouped.entries()).map(([categoryName, items]) => ({
+            categoryName,
+            items,
+          }))
+        };
+      })
+    );
   }
 
   getPackingProgress(tripId: number): Observable<any> {
@@ -47,5 +83,14 @@ export class GearService {
 
   deleteGearItem(itemId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiGearItemUrl}/${itemId}`);
+  }
+
+  addCustomGearItem(tripId: number, categoryName: string, itemData: any): Observable<void> {
+    const payload = {
+      ...itemData,
+      tripId,
+      categoryName
+    };
+    return this.http.post<void>(this.apiGearItemUrl, payload);
   }
 }

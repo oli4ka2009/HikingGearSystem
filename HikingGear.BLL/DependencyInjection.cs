@@ -18,6 +18,7 @@ namespace HikingGear.BLL
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITripService, TripService>();
             services.AddScoped<IGearItemService, GearItemService>();
+            services.AddScoped<ICategoryService, CategoryService>();
 
             return services;
         }

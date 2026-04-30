@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>Додати категорію</h2>
+<mat-dialog-content>
+  <form [formGroup]="categoryForm">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Назва категорії</mat-label>
+      <input matInput formControlName="name" placeholder="Наприклад: Одяг" />
+      @if (categoryForm.get('name')?.hasError('required')) {
+        <mat-error>Назва обов'язкова</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Скасувати</button>
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="categoryForm.invalid">Зберегти</button>
+</mat-dialog-actions>

@@ -136,6 +136,14 @@
   padding: 10px 0 !important;
 }
 
+.actions-section {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
 .generate-btn {
   padding: 25px 40px;
   font-size: 1.2rem;
@@ -143,6 +151,12 @@
   align-items: center;
   justify-content: center;
   min-width: 350px;
+}
+
+.add-category-btn {
+  height: 56px;
+  padding: 0 24px;
+  font-size: 1rem;
 }
 
 mat-spinner {

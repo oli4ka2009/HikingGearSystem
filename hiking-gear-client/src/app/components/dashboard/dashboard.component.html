@@ -8,14 +8,26 @@
 </mat-toolbar>
 
 <div class="dashboard-content">
-  <h2>Available Trips</h2>
+  <div class="header-row">
+    <h2>Доступні походи</h2>
+    <button mat-raised-button color="primary" (click)="createTrip()">
+      <mat-icon>add</mat-icon>
+      Створити похід
+    </button>
+  </div>
 
   <div class="trips-grid">
     @for (trip of trips(); track trip.id) {
       <mat-card>
         <mat-card-header>
-          <mat-card-title>{{ trip.title }}</mat-card-title>
-          <mat-card-subtitle>{{ trip.locationName }}</mat-card-subtitle>
+          <div class="card-header-content">
+            <mat-card-title>{{ trip.title }}</mat-card-title>
+            <mat-card-subtitle>{{ trip.locationName }}</mat-card-subtitle>
+          </div>
+          <span class="spacer"></span>
+          <button mat-icon-button color="warn" (click)="deleteTrip(trip.id)" aria-label="Видалити">
+            <mat-icon>delete</mat-icon>
+          </button>
         </mat-card-header>
         <mat-card-content>
           <p><strong>Дати:</strong> {{ trip.startDate | date:'shortDate' }} - {{ trip.endDate | date:'shortDate' }}</p>
@@ -26,7 +38,7 @@
         </mat-card-actions>
       </mat-card>
     } @empty {
-      <p>No trips available at the moment.</p>
+      <p>Наразі немає доступних походів.</p>
     }
   </div>
 </div>

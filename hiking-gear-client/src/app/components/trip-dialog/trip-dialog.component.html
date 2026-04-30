@@ -1,0 +1,52 @@
+<h2 mat-dialog-title>Створити нову подорож</h2>
+<mat-dialog-content>
+  <form [formGroup]="tripForm" class="trip-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Назва походу</mat-label>
+      <input matInput formControlName="title" placeholder="Наприклад: Чорногірський хребет" />
+    </mat-form-field>
+    <div class="map-container">
+      <label>Виберіть локацію на карті:</label>
+      <div id="map" style="height: 300px; width: 100%; display: block; position: relative; z-index: 1;"></div>
+    </div>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Локація (пошук або клік на карті)</mat-label>
+      <input matInput formControlName="locationName" placeholder="Введіть назву для пошуку" [matAutocomplete]="auto" />
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onLocationSelected($event)">
+        @for (result of searchResults(); track result.place_id) {
+        <mat-option [value]="result.display_name">{{ result.display_name }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+    <div class="row">
+      <mat-form-field appearance="outline">
+        <mat-label>Дата початку</mat-label>
+        <input matInput type="date" formControlName="startDate" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Дата завершення</mat-label>
+        <input matInput type="date" formControlName="endDate" />
+      </mat-form-field>
+    </div>
+    <div class="row">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Тип ночівлі</mat-label>
+        <mat-select formControlName="accommodationFormat">
+          <mat-option [value]="0">Не визначено / Без ночівлі</mat-option>
+          <mat-option [value]="1">Намет</mat-option>
+          <mat-option [value]="2">Притулок / Будиночок</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Розмір групи</mat-label>
+        <input matInput type="number" formControlName="groupSize" min="1" />
+      </mat-form-field>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Скасувати</button>
+  <button mat-button color="primary" [disabled]="tripForm.invalid" (click)="save()">
+    Створити
+  </button>
+</mat-dialog-actions>

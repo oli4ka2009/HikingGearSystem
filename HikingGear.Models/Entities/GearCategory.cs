@@ -13,6 +13,8 @@ namespace HikingGear.Models.Entities
         [MaxLength(50)]
         public string Name { get; set; } = string.Empty;
 
+        public int TripId { get; set; }
+
         public ICollection<GearItem> GearItems { get; set; } = new List<GearItem>();
     }
 }

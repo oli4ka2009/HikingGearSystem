@@ -20,6 +20,7 @@ namespace HikingGear.DAL
             services.AddScoped<ITripRepository, TripRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IGearItemRepository, GearItemRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             return services;
         }
