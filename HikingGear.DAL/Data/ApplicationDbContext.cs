@@ -31,17 +31,17 @@ namespace HikingGear.DAL.Data
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<GearItem>()
-                .HasOne(g => g.Trip)
-                .WithMany(t => t.GearItems)
-                .HasForeignKey(g => g.TripId)
+            modelBuilder.Entity<GearCategory>()
+                .HasOne(c => c.Trip)
+                .WithMany(t => t.Categories)
+                .HasForeignKey(c => c.TripId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<GearItem>()
                 .HasOne(g => g.Category)
                 .WithMany(c => c.GearItems)
                 .HasForeignKey(g => g.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)

@@ -2,7 +2,12 @@
   <button mat-icon-button routerLink="/dashboard" aria-label="Назад до панелі керування">
     <mat-icon>arrow_back</mat-icon>
   </button>
-  <span>Деталі походу #{{ tripId }}</span>
+  <span>Деталі походу: <strong>{{ trip()?.title || tripId }}</strong></span>
+  
+  <button mat-icon-button (click)="openEditTripDialog()" title="Редагувати деталі походу">
+    <mat-icon>edit</mat-icon>
+  </button>
+
   @if (trip(); as t) {
     <span style="margin-left: 16px; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
       @switch (t.accommodationFormat) {
@@ -111,40 +116,62 @@
     <div class="cards-grid">
       @for (category of gearList()?.categories; track category.categoryName) {
       <mat-card class="category-card">
-        <mat-card-header>
+        <mat-card-header class="category-header">
           <mat-card-title>{{ category.categoryName }}</mat-card-title>
+          <div class="category-actions">
+            <button mat-icon-button (click)="openEditCategoryDialog(category)" title="Редагувати категорію">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteCategory(category)" title="Видалити категорію">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
         </mat-card-header>
 
         <mat-card-content>
           <mat-list>
             @for (item of category.items; track item.id) {
-            <mat-list-item [class.packed-item]="item.isPacked">
-              <div matListItemTitle class="item-title-row">
-                <mat-checkbox [checked]="item.isPacked"
-                              (change)="togglePacked(item)">
-                  <span [class.line-through]="item.isPacked">{{ item.name }}</span>
-                </mat-checkbox>
-                <button mat-icon-button color="warn" (click)="deleteItem(item.id)" aria-label="Видалити">
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </div>
-              <span matListItemLine>
-                Кількість: <strong>{{ item.quantity }} шт.</strong> |
-                Вага: {{ item.weightInGrams }} г
+            <mat-list-item [class.packed-item]="item.isPacked" class="compact-gear-item">
+              <div class="gear-row-container">
+                <!-- ЛІВИЙ БЛОК: Інфо -->
+                <div class="gear-info-block">
+                  <mat-checkbox [checked]="item.isPacked" (change)="togglePacked(item)" class="compact-checkbox">
+                  </mat-checkbox>
+                  
+                  <div class="gear-text-column">
+                    <span class="gear-name" [class.line-through]="item.isPacked">{{ item.name }}</span>
+                    
+                    <div class="gear-sub-details">
+                      <span class="detail-item">{{ item.quantity }} шт.</span>
+                      <span class="detail-divider">•</span>
+                      <span class="detail-item">{{ item.weightInGrams }} г</span>
+                      
+                      @if (item.isWearable) {
+                        <mat-icon class="mini-status-icon wearable" title="На собі">checkroom</mat-icon>
+                      }
+                      @if (item.isGroupGear) {
+                        <span class="group-badge">👥 Групове</span>
+                      }
+                    </div>
+                  </div>
+                </div>
 
-                @if (item.isGroupGear) {
-                <span style="color: #ff4081; margin-left: 8px;">(👥 Групове)</span>
-                }
-                @if (item.isWearable) {
-                <span style="color: #3f51b5; margin-left: 8px;">(👕 На собі)</span>
-                }
-              </span>
+                <!-- ПРАВИЙ БЛОК: Дії -->
+                <div class="gear-actions-block">
+                  <button mat-icon-button color="primary" (click)="openEditItemDialog(item)" title="Редагувати">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteItem(item)" title="Видалити">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
             </mat-list-item>
             }
           </mat-list>
         </mat-card-content>
         <mat-card-actions>
-          <button mat-button color="primary" (click)="openAddItemDialog(category.categoryName)">
+          <button mat-button color="primary" (click)="openAddItemDialog(category)">
             <mat-icon>add</mat-icon>
             Додати річ
           </button>

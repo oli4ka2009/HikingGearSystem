@@ -1,19 +1,18 @@
-import { Component, inject, AfterViewInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, AfterViewInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { HttpClient } from '@angular/common/http';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { of, forkJoin } from 'rxjs';
 import maplibregl from 'maplibre-gl';
-
 import { AccommodationFormat, TripService } from '../../services/trip.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -21,7 +20,7 @@ const HOVERLA = { lat: 48.1597, lng: 24.5001, zoom: 11 };
 const MAPY_API_KEY = '3o8YwpBjR3xt5Bn3xabQG9uQ0Wm2Gun9l6r0ShNWjP0';
 
 @Component({
-  selector: 'app-trip-dialog',
+  selector: 'app-trip-edit-dialog',
   standalone: true,
   imports: [
     CommonModule,
@@ -31,25 +30,28 @@ const MAPY_API_KEY = '3o8YwpBjR3xt5Bn3xabQG9uQ0Wm2Gun9l6r0ShNWjP0';
     MatInputModule,
     MatButtonModule,
     MatSelectModule,
-    MatAutocompleteModule,
     MatDatepickerModule,
-    MatIconModule
+    MatIconModule,
+    MatAutocompleteModule
   ],
-  templateUrl: './trip-dialog.component.html',
-  styleUrl: './trip-dialog.component.css'
+  templateUrl: './trip-edit-dialog.component.html',
+  styleUrl: './trip-edit-dialog.component.css'
 })
-export class TripDialogComponent implements AfterViewInit, OnDestroy {
+export class TripEditDialogComponent implements OnInit, AfterViewInit, OnDestroy {
   private fb = inject(FormBuilder);
-  private dialogRef = inject(MatDialogRef<TripDialogComponent>);
+  private dialogRef = inject(MatDialogRef<TripEditDialogComponent>);
   private tripService = inject(TripService);
   private http = inject(HttpClient);
+  public data = inject(MAT_DIALOG_DATA);
+
   private map!: maplibregl.Map;
   private marker?: maplibregl.Marker;
   private popup?: maplibregl.Popup;
 
+  public AccommodationFormat = AccommodationFormat;
+  serverErrors: any = {};
   isSearching = false;
   searchResults = signal<any[]>([]);
-  serverErrors: any = {};
 
   tripForm: FormGroup = this.fb.group({
     title: ['', Validators.required],
@@ -57,10 +59,16 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
     startDate: ['', Validators.required],
     endDate: ['', Validators.required],
     groupSize: [1, [Validators.required, Validators.min(1)]],
-    accommodationFormat: [0],
+    accommodationFormat: [AccommodationFormat.None, Validators.required],
     latitude: [0, Validators.required],
     longitude: [0, Validators.required]
   });
+
+  ngOnInit(): void {
+    if (this.data && this.data.trip) {
+      this.tripForm.patchValue(this.data.trip);
+    }
+  }
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -69,6 +77,26 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.map?.remove();
+  }
+
+  private initMap(): void {
+    const lat = this.data.trip?.latitude || HOVERLA.lat;
+    const lng = this.data.trip?.longitude || HOVERLA.lng;
+
+    this.map = new maplibregl.Map({
+      container: 'edit-map',
+      style: this.getTileStyle(),
+      center: [lng, lat],
+      zoom: 12
+    });
+
+    this.map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    this.map.on('click', (e) => this.handleMapClick(e.lngLat.lat, e.lngLat.lng));
+
+    // Початковий маркер
+    if (this.data.trip?.latitude) {
+      this.placeMarker(lng, lat, this.data.trip.locationName);
+    }
   }
 
   private getTileStyle(): any {
@@ -86,23 +114,15 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
     };
   }
 
-  private initMap(): void {
-    this.map = new maplibregl.Map({
-      container: 'map',
-      style: this.getTileStyle(),
-      center: [HOVERLA.lng, HOVERLA.lat],
-      zoom: HOVERLA.zoom
-    });
-    this.map.addControl(new maplibregl.NavigationControl(), 'top-right');
-    this.map.on('click', (e) => this.handleMapClick(e.lngLat.lat, e.lngLat.lng));
-  }
-
   private initSearchAutocomplete(): void {
     this.tripForm.get('locationName')!.valueChanges.pipe(
       debounceTime(400),
       distinctUntilChanged(),
       switchMap(query => {
-        if (!query || query.length < 3) { this.searchResults.set([]); return of([]); }
+        if (!query || typeof query !== 'string' || query.length < 3) {
+          this.searchResults.set([]);
+          return of([]);
+        }
         return this.http.get<any[]>(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ua&limit=5`
         ).pipe(catchError(() => of([])));
@@ -117,7 +137,7 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
       const lng = parseFloat(selected.lon);
       this.placeMarker(lng, lat, selected.display_name);
       this.tripForm.patchValue({ latitude: lat, longitude: lng, locationName: selected.display_name });
-      this.map.flyTo({ center: [lng, lat], zoom: 12 });
+      this.map.flyTo({ center: [lng, lat], zoom: 14 });
       this.searchResults.set([]);
     }
   }
@@ -128,7 +148,7 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
     this.isSearching = true;
 
     const natureRadius = 2000;  // природні об'єкти — точніше, 2км
-    const placeRadius = 15000; // населені пункти — до 15км (Ворохта від Говерли ~8км)
+    const placeRadius = 15000; // населені пункти — до 15км
     const query = `
       [out:json][timeout:20];
       (
@@ -177,12 +197,10 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
   private buildLocationName(lat: number, lng: number, overpassRes: any, nominatimRes: any): void {
     const elements = overpassRes?.elements || [];
 
-    // Визначаємо тип і вагу кожного елемента
     const getTypeKey = (el: any): string =>
       el.tags?.waterway || el.tags?.natural || el.tags?.water ||
       el.tags?.landuse || el.tags?.place || el.tags?.tourism || '';
 
-    // Чи є це "цікавий природний об'єкт" (не село і не хребет)
     const isNaturalFeature = (typeKey: string) =>
       ['peak', 'saddle', 'waterfall', 'water', 'lake', 'pond',
         'grassland', 'heath', 'meadow', 'alpine_hut', 'wilderness_hut'].includes(typeKey);
@@ -204,22 +222,17 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
         };
       })
       .filter(Boolean)
-      // Сортуємо ТІЛЬКИ по відстані — що ближче, те й показуємо
       .sort((a: any, b: any) => a.distance - b.distance);
 
-    // Головний об'єкт — найближчий природний (не село)
     const main = withDistance.find((el: any) => isNaturalFeature(el.typeKey))
-      ?? withDistance[0]; // якщо природних нема — беремо найближче що є
+      ?? withDistance[0];
 
-    // Найближче село
     const nearestVillage = withDistance.find((el: any) => isVillage(el.typeKey));
 
-    // Область з Nominatim
     const region = nominatimRes?.address?.state
       || nominatimRes?.address?.county
       || null;
 
-    // Населений пункт з Nominatim — перевіряємо всі можливі поля адреси
     const addr = nominatimRes?.address || {};
     const nominatimPlace =
       addr.village || addr.hamlet || addr.suburb ||
@@ -232,7 +245,6 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
       parts.push(this.buildLabel(main));
     }
 
-    // Населений пункт — з Nominatim або з Overpass як fallback
     const placeName = nominatimPlace && nominatimPlace !== main?.name
       ? nominatimPlace
       : (nearestVillage && nearestVillage !== main ? nearestVillage.name : null);
@@ -248,7 +260,6 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
       parts.push(country);
     }
 
-    // Фільтруємо порожні значення щоб не було зайвих ком
     const locationText = parts.filter(Boolean).join(', ')
       || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 
@@ -263,6 +274,15 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
     return `${name}${elevationStr}`;
   }
 
+  private distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
 
   private placeMarker(lng: number, lat: number, label: string): void {
     this.popup?.remove();
@@ -279,22 +299,13 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
       .addTo(this.map);
   }
 
-  private distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLng / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  close(): void { this.dialogRef.close(); }
-
   save(): void {
     if (this.tripForm.valid) {
       this.serverErrors = {};
-      this.tripService.createTrip(this.tripForm.value).subscribe({
+      const tripData = this.tripForm.value;
+      const tripId = this.data.tripId;
+
+      this.tripService.updateTrip(tripId, tripData).subscribe({
         next: () => {
           this.dialogRef.close(true);
         },
@@ -309,9 +320,13 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
               }
             });
           }
-          console.error('Помилка створення походу:', err);
+          console.error('Помилка оновлення походу:', err);
         }
       });
     }
+  }
+
+  cancel(): void {
+    this.dialogRef.close();
   }
 }

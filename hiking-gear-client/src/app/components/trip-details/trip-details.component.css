@@ -88,11 +88,114 @@
   opacity: 0.6;
 }
 
-.item-title-row {
+/* Нова компактна верстка елементів списку */
+.compact-gear-item {
+  height: auto !important;
+  padding: 4px 8px !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.compact-gear-item:last-child {
+  border-bottom: none;
+}
+
+.gear-row-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  gap: 8px;
+}
+
+.gear-info-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-checkbox {
+  margin-top: -4px; /* Вирівнювання чекбокса по висоті першого рядка тексту */
+}
+
+.gear-text-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gear-name {
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.gear-sub-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: #757575;
+}
+
+.detail-divider {
+  color: #ccc;
+}
+
+.mini-status-icon {
+  width: 16px !important;
+  height: 16px !important;
+  font-size: 16px !important;
+  margin-left: 4px;
+}
+
+.wearable {
+  color: #3f51b5;
+}
+
+.group-badge {
+  background: #fce4ec;
+  color: #d81b60;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.gear-actions-block {
+  display: flex;
+  gap: 0;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.gear-actions-block button {
+  transform: scale(0.85); /* Трохи менші кнопки для компактності */
+}
+
+/* Перевизначення Material List */
+::ng-deep .compact-gear-item .mdc-list-item__content {
+  display: block !important;
+  padding: 0 !important;
+}
+
+::ng-deep .compact-gear-item .mdc-checkbox {
+  padding: 8px !important;
+}
+
+.category-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+}
+
+.category-actions {
+  display: flex;
+  gap: 4px;
 }
 
 .cards-grid {

@@ -31,12 +31,16 @@ namespace HikingGear.API.Controllers
         {
             try
             {
-                var items = await _gearItemService.GetGearForTripAsync(tripId, GetUserId());
-                return Ok(items);
+                var result = await _gearItemService.GetGearForTripAsync(tripId, GetUserId());
+                return Ok(result);
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return Forbid();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
         }
 

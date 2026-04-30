@@ -13,5 +13,6 @@ namespace HikingGear.BLL.Interfaces
         Task<IEnumerable<TripResponseDto>> GetUserTripsAsync(int userId);
         Task<TripResponseDto?> GetTripByIdAsync(int id);
         Task DeleteTripAsync(int userId, int tripId);
+        Task<bool> UpdateTripAsync(int tripId, int userId, TripUpdateDto dto);
     }
 }

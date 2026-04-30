@@ -20,44 +20,21 @@ namespace HikingGear.DAL.Repositories
         public GearItemRepository(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string is missing.");
+            _connectionString = configuration.GetConnectionString("DefaultConnection")!;
         }
 
-        public async Task<IEnumerable<GearItem>> GetItemsByTripIdAsync(int tripId)
+        public async Task<IEnumerable<GearItem>> GetItemsByCategoryIdAsync(int categoryId)
         {
             using var connection = new SqlConnection(_connectionString);
-            var query = @"
-                SELECT g.*, c.Id, c.Name 
-                FROM GearItems g
-                INNER JOIN GearCategories c ON g.CategoryId = c.Id
-                WHERE g.TripId = @TripId";
-
-            return await connection.QueryAsync<GearItem, GearCategory, GearItem>(
-                query,
-                (gear, category) =>
-                {
-                    gear.Category = category;
-                    return gear;
-                },
-                new { TripId = tripId },
-                splitOn: "Id"
-            );
+            var query = "SELECT * FROM GearItems WHERE CategoryId = @CategoryId";
+            return await connection.QueryAsync<GearItem>(query, new { CategoryId = categoryId });
         }
 
-        public async Task<int> GetOrCreateCategoryIdAsync(string categoryName)
+        public async Task<GearItem?> GetItemByIdAsync(int itemId)
         {
-            var category = await _context.GearCategories
-                .FirstOrDefaultAsync(c => c.Name == categoryName);
-
-            if (category == null)
-            {
-                category = new GearCategory { Name = categoryName };
-                await _context.GearCategories.AddAsync(category);
-                await _context.SaveChangesAsync();
-            }
-
-            return category.Id;
+            using var connection = new SqlConnection(_connectionString);
+            return await connection.QueryFirstOrDefaultAsync<GearItem>(
+                "SELECT * FROM GearItems WHERE Id = @Id", new { Id = itemId });
         }
 
         public async Task AddItemsAsync(IEnumerable<GearItem> items)
@@ -78,24 +55,13 @@ namespace HikingGear.DAL.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<GearItem?> GetItemByIdAsync(int itemId)
+        public async Task DeleteItemsByCategoryIdAsync(int categoryId)
         {
-            using var connection = new SqlConnection(_connectionString);
-            var query = "SELECT * FROM GearItems WHERE Id = @Id";
-            return await connection.QueryFirstOrDefaultAsync<GearItem>(query, new { Id = itemId });
-        }
-
-        public async Task DeleteItemsByTripIdAsync(int tripId)
-        {
-            var itemsToDelete = await _context.GearItems
-                .Where(i => i.TripId == tripId)
+            var items = await _context.GearItems
+                .Where(i => i.CategoryId == categoryId)
                 .ToListAsync();
-
-            if (itemsToDelete.Any())
-            {
-                _context.GearItems.RemoveRange(itemsToDelete);
-                await _context.SaveChangesAsync();
-            }
+            _context.GearItems.RemoveRange(items);
+            await _context.SaveChangesAsync();
         }
     }
 }

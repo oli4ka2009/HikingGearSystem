@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -6,6 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
+import { GearService } from '../../services/gear.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-gear-item-dialog',
@@ -22,10 +24,13 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './gear-item-dialog.component.html',
   styleUrl: './gear-item-dialog.component.css',
 })
-export class GearItemDialogComponent {
+export class GearItemDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<GearItemDialogComponent>);
+  private gearService = inject(GearService);
   public data = inject(MAT_DIALOG_DATA);
+
+  serverErrors: any = {};
 
   gearForm: FormGroup = this.fb.group({
     name: ['', Validators.required],
@@ -35,13 +40,44 @@ export class GearItemDialogComponent {
     isWearable: [false],
   });
 
+  ngOnInit(): void {
+    if (this.data && this.data.item) {
+      this.gearForm.patchValue(this.data.item);
+    }
+  }
+
   close(): void {
     this.dialogRef.close();
   }
 
   save(): void {
     if (this.gearForm.valid) {
-      this.dialogRef.close(this.gearForm.value);
+      this.serverErrors = {};
+      const gearData = this.gearForm.value;
+      const isEdit = !!this.data.item;
+
+      const request = isEdit
+        ? this.gearService.updateGearItem(this.data.item.id, gearData)
+        : this.gearService.addCustomGearItem(this.data.categoryId, gearData);
+
+      request.subscribe({
+        next: () => {
+          this.dialogRef.close(true);
+        },
+        error: (err: HttpErrorResponse) => {
+          if (err.status === 400 && err.error?.errors) {
+            this.serverErrors = err.error.errors;
+            Object.keys(this.serverErrors).forEach(key => {
+              const controlName = key.charAt(0).toLowerCase() + key.slice(1);
+              const control = this.gearForm.get(controlName);
+              if (control) {
+                control.setErrors({ serverError: this.serverErrors[key][0] });
+              }
+            });
+          }
+          console.error('Помилка збереження речі:', err);
+        }
+      });
     }
   }
 }

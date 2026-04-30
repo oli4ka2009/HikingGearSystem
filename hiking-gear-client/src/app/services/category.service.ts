@@ -13,7 +13,7 @@ export class CategoryService {
     return this.http.get<any[]>(this.baseUrl);
   }
 
-  createCategory(data: { name: string }): Observable<any> {
+  createCategory(data: { name: string; tripId: number }): Observable<any> {
     return this.http.post<any>(this.baseUrl, data);
   }
 

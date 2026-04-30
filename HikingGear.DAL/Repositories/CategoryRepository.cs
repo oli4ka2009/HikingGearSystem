@@ -56,5 +56,19 @@ namespace HikingGear.DAL.Repositories
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<GearCategory>> GetByTripIdAsync(int tripId)
+        {
+            return await _context.GearCategories
+                .Include(c => c.GearItems)
+                .Where(c => c.TripId == tripId)
+                .ToListAsync();
+        }
+
+        public async Task<GearCategory?> GetByTripAndNameAsync(int tripId, string name)
+        {
+            return await _context.GearCategories
+                .FirstOrDefaultAsync(c => c.TripId == tripId && c.Name == name);
+        }
     }
 }

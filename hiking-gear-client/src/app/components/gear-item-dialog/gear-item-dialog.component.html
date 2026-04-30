@@ -1,34 +1,41 @@
-<h2 mat-dialog-title>Додати річ до категорії: {{ data.categoryName }}</h2>
-
+<h2 mat-dialog-title>{{ data?.item ? 'Редагувати річ' : 'Додати річ' }}</h2>
 <mat-dialog-content>
   <form [formGroup]="gearForm" class="gear-form">
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Назва речі</mat-label>
-      <input matInput formControlName="name" placeholder="Наприклад: Намет" />
+    <mat-form-field appearance="fill" subscriptSizing="dynamic" class="full-width">
+      <mat-label>Назва</mat-label>
+      <input matInput formControlName="name" placeholder="Назва речі" />
+      @if (gearForm.get('name')?.errors?.['serverError']) {
+        <mat-error>{{ gearForm.get('name')?.errors?.['serverError'] }}</mat-error>
+      }
     </mat-form-field>
 
-    <div class="row">
-      <mat-form-field appearance="outline">
-        <mat-label>Вага в грамах</mat-label>
-        <input matInput type="number" formControlName="weightInGrams" min="0" />
+    <div class="form-row">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic">
+        <mat-label>Вага (г)</mat-label>
+        <input matInput type="number" formControlName="weightInGrams" />
+        @if (gearForm.get('weightInGrams')?.errors?.['serverError']) {
+          <mat-error>{{ gearForm.get('weightInGrams')?.errors?.['serverError'] }}</mat-error>
+        }
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="fill" subscriptSizing="dynamic">
         <mat-label>Кількість</mat-label>
-        <input matInput type="number" formControlName="quantity" min="1" />
+        <input matInput type="number" formControlName="quantity" />
+        @if (gearForm.get('quantity')?.errors?.['serverError']) {
+          <mat-error>{{ gearForm.get('quantity')?.errors?.['serverError'] }}</mat-error>
+        }
       </mat-form-field>
     </div>
 
-    <div class="checkbox-group">
+    <div class="checkbox-row">
       <mat-checkbox formControlName="isGroupGear">Групове спорядження</mat-checkbox>
-      <mat-checkbox formControlName="isWearable">Одягнене на собі</mat-checkbox>
+      <mat-checkbox formControlName="isWearable">Одягнуто на собі</mat-checkbox>
     </div>
   </form>
 </mat-dialog-content>
-
 <mat-dialog-actions align="end">
   <button mat-button (click)="close()">Скасувати</button>
-  <button mat-button color="primary" [disabled]="gearForm.invalid" (click)="save()">
-    Додати
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="gearForm.invalid">
+    {{ data?.item ? 'Зберегти зміни' : 'Додати' }}
   </button>
 </mat-dialog-actions>

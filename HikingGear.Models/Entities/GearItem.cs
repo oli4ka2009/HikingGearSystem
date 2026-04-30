@@ -11,9 +11,6 @@ namespace HikingGear.Models.Entities
     {
         public int Id { get; set; }
 
-        public int TripId { get; set; }
-        public Trip Trip { get; set; } = null!;
-
         public int CategoryId { get; set; }
         public GearCategory Category { get; set; } = null!;
 

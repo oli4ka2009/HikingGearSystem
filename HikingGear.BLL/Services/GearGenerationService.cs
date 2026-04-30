@@ -21,6 +21,7 @@ namespace HikingGear.BLL.Services
         private readonly IWeatherService _weatherService;
         private readonly ILogger<GearGenerationService> _logger;
         private readonly IGearItemRepository _gearItemRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
         public GearGenerationService(
             HttpClient httpClient,
@@ -28,7 +29,8 @@ namespace HikingGear.BLL.Services
             ITripRepository tripRepository,
             IWeatherService weatherService,
             ILogger<GearGenerationService> logger,
-            IGearItemRepository gearItemRepository)
+            IGearItemRepository gearItemRepository,
+            ICategoryRepository categoryRepository)
         {
             _httpClient = httpClient;
             _apiKey = configuration["Gemini:ApiKey"]
@@ -37,6 +39,7 @@ namespace HikingGear.BLL.Services
             _weatherService = weatherService;
             _logger = logger;
             _gearItemRepository = gearItemRepository;
+            _categoryRepository = categoryRepository;
         }
 
         public async Task<TripGearResponseDto> GenerateGearListAsync(int tripId)
@@ -45,13 +48,11 @@ namespace HikingGear.BLL.Services
 
             // ТИМЧАСОВА ЗАГЛУШКА (MOCK) ПОКИ GOOGLE ЛЕЖИТЬ
             _logger.LogInformation("Використовуємо Mock-дані, бо Gemini API видає 503...");
-
-            // Імітуємо, що ШІ "думає" 2 секунди (щоб ти побачила свій спінер в Angular)
             await Task.Delay(2000);
 
             var mockDto = new AiGearResponseDto
             {
-                Categories = new List<AiCategoryDto> // Перевір, як точно називається твій DTO для категорії
+                Categories = new List<AiCategoryDto>
         {
             new AiCategoryDto
             {
@@ -73,81 +74,76 @@ namespace HikingGear.BLL.Services
         }
             };
 
-            // Зберігаємо нашу заглушку в базу (і ПЕРЕВІРЯЄМО, чи затреться старий список!)
+            // ✅ Зберігаємо в базу (новий метод видаляє старі категорії цього походу і створює нові)
             await SaveGeneratedGearAsync(tripId, mockDto);
 
-            var savedItems = await _gearItemRepository.GetItemsByTripIdAsync(tripId);
+            // ✅ Дістаємо збережені категорії з речами через CategoryRepository
+            var categories = await _categoryRepository.GetByTripIdAsync(tripId); // Include(GearItems) всередині
 
             return new TripGearResponseDto
             {
-                Categories = savedItems
-        .GroupBy(i => i.Category.Name) // Переконайся, що Category завантажена через .Include()
-        .Select(g => new TripCategoryDto
-        {
-            CategoryName = g.Key,
-            Items = g.Select(i => new TripGearItemDto
-            {
-                Id = i.Id,
-                Name = i.Name,
-                WeightInGrams = i.WeightInGrams,
-                Quantity = i.Quantity,
-                IsGroupGear = i.IsGroupGear,
-                IsWearable = i.IsWearable,
-                IsPacked = i.IsPacked
-            }).ToList()
-        }).ToList()
+                Categories = categories.Select(c => new TripCategoryDto
+                {
+                    Id = c.Id,
+                    CategoryName = c.Name,
+                    Items = c.GearItems.Select(i => new TripGearItemDto
+                    {
+                        Id = i.Id,
+                        Name = i.Name,
+                        WeightInGrams = i.WeightInGrams,
+                        Quantity = i.Quantity,
+                        IsGroupGear = i.IsGroupGear,
+                        IsWearable = i.IsWearable,
+                        IsPacked = i.IsPacked
+                    }).ToList()
+                }).ToList()
             };
 
-            /*var trip = await GetValidTripAsync(tripId);
+            /* TODO: Розкоментувати коли Gemini API запрацює:
             var weather = await FetchWeatherAsync(trip);
-
             _logger.LogInformation("Отримано погоду для походу ID {TripId}: {WeatherData}",
-                tripId,
-                JsonSerializer.Serialize(weather));
-
+                tripId, JsonSerializer.Serialize(weather));
             var prompt = BuildPrompt(trip, weather);
             var aiJsonResponse = await SendGeminiRequestAsync(prompt);
-
             var generatedDto = ParseGeminiResponse(aiJsonResponse);
-
             await SaveGeneratedGearAsync(tripId, generatedDto);
-
-            return generatedDto; */
+            var categories = await _categoryRepository.GetByTripIdAsync(tripId);
+            return new TripGearResponseDto { ... }; // те саме мапування
+            */
         }
 
         private async Task SaveGeneratedGearAsync(int tripId, AiGearResponseDto dto)
         {
-            await _gearItemRepository.DeleteItemsByTripIdAsync(tripId);
-            _logger.LogInformation("Попередній список спорядження для походу {TripId} успішно очищено.", tripId);
+            var existingCategories = await _categoryRepository.GetByTripIdAsync(tripId);
+            foreach (var cat in existingCategories)
+                await _categoryRepository.DeleteAsync(cat);
+            await _categoryRepository.SaveChangesAsync();
 
             if (dto.Categories == null || !dto.Categories.Any()) return;
 
-            var gearItemsToSave = new List<GearItem>();
-
             foreach (var categoryDto in dto.Categories)
             {
-                int categoryId = await _gearItemRepository.GetOrCreateCategoryIdAsync(categoryDto.CategoryName);
-
-                foreach (var itemDto in categoryDto.Items)
+                var category = new GearCategory
                 {
-                    gearItemsToSave.Add(new GearItem
-                    {
-                        TripId = tripId,
-                        CategoryId = categoryId,
-                        Name = itemDto.Name,
-                        WeightInGrams = itemDto.WeightInGrams,
-                        Quantity = itemDto.Quantity,
-                        IsGroupGear = itemDto.IsGroupGear,
-                        IsPacked = false,
-                        IsWearable = itemDto.IsWearable
-                    });
-                }
-            }
+                    Name = categoryDto.CategoryName,
+                    TripId = tripId
+                };
 
-            if (gearItemsToSave.Any())
-            {
-                await _gearItemRepository.AddItemsAsync(gearItemsToSave);
-                _logger.LogInformation("Успішно збережено {Count} речей у базу даних для походу {TripId}.", gearItemsToSave.Count, tripId);
+                await _categoryRepository.AddAsync(category);
+                await _categoryRepository.SaveChangesAsync();
+
+                var items = categoryDto.Items.Select(itemDto => new GearItem
+                {
+                    CategoryId = category.Id,
+                    Name = itemDto.Name,
+                    WeightInGrams = itemDto.WeightInGrams,
+                    Quantity = itemDto.Quantity,
+                    IsGroupGear = itemDto.IsGroupGear,
+                    IsWearable = itemDto.IsWearable,
+                    IsPacked = false
+                }).ToList();
+
+                await _gearItemRepository.AddItemsAsync(items);
             }
         }
 

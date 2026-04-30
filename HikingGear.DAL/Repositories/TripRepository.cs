@@ -2,6 +2,7 @@
 using HikingGear.DAL.Data;
 using HikingGear.Models.Entities;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -25,16 +26,20 @@ namespace HikingGear.DAL.Repositories
 
         public async Task<Trip?> GetTripByIdAsync(int id)
         {
-            using var connection = new SqlConnection(_connectionString);
-            var query = "SELECT * FROM Trips WHERE Id = @Id";
-            return await connection.QueryFirstOrDefaultAsync<Trip>(query, new { Id = id });
+            return await _context.Trips
+                .Include(t => t.Categories)
+                    .ThenInclude(c => c.GearItems)
+                .FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public async Task<IEnumerable<Trip>> GetUserTripsAsync(int userId)
         {
-            using var connection = new SqlConnection(_connectionString);
-            var query = "SELECT * FROM Trips WHERE UserId = @UserId ORDER BY StartDate DESC";
-            return await connection.QueryAsync<Trip>(query, new { UserId = userId });
+            return await _context.Trips
+                .Include(t => t.Categories)
+                    .ThenInclude(c => c.GearItems)
+                .Where(t => t.UserId == userId)
+                .OrderByDescending(t => t.StartDate)
+                .ToListAsync();
         }
 
         public async Task AddTripAsync(Trip trip)
@@ -53,6 +58,12 @@ namespace HikingGear.DAL.Repositories
         {
             _context.Trips.Remove(trip);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsUserOwnerOfTripAsync(int tripId, int userId)
+        {
+            return await _context.Trips
+                .AnyAsync(t => t.Id == tripId && t.UserId == userId);
         }
     }
 }

@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TripDialogComponent } from '../trip-dialog/trip-dialog.component';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,7 +24,8 @@ import { TripDialogComponent } from '../trip-dialog/trip-dialog.component';
     MatCardModule,
     MatIconModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    ConfirmDialogComponent
   ],
   providers: [DatePipe],
   templateUrl: './dashboard.component.html',
@@ -71,18 +73,28 @@ export class DashboardComponent implements OnInit {
   }
 
   deleteTrip(id: number): void {
-    if (window.confirm('Точно видалити цей похід разом з усім спорядженням?')) {
-      this.tripService.deleteTrip(id).subscribe({
-        next: () => {
-          this.snackBar.open('Подорож видалена', 'Закрити', { duration: 3000 });
-          this.loadTrips();
-        },
-        error: (err) => {
-          console.error('Помилка при видаленні подорожі', err);
-          this.snackBar.open('Помилка при видаленні подорожі', 'Закрити', { duration: 3000 });
-        }
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '350px',
+      data: {
+        title: 'Видалити похід?',
+        message: 'Точно видалити цей похід разом з усім спорядженням?'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.tripService.deleteTrip(id).subscribe({
+          next: () => {
+            this.snackBar.open('Подорож видалена', 'Закрити', { duration: 3000 });
+            this.loadTrips();
+          },
+          error: (err) => {
+            console.error('Помилка при видаленні подорожі', err);
+            this.snackBar.open('Помилка при видаленні подорожі', 'Закрити', { duration: 3000 });
+          }
+        });
+      }
+    });
   }
 
   logout(): void {

@@ -11,6 +11,7 @@ namespace HikingGear.DAL.Repositories
     {
         Task<Trip?> GetTripByIdAsync(int id);
         Task<IEnumerable<Trip>> GetUserTripsAsync(int userId);
+        Task<bool> IsUserOwnerOfTripAsync(int tripId, int userId);
 
         Task AddTripAsync(Trip trip);
         Task UpdateTripAsync(Trip trip);

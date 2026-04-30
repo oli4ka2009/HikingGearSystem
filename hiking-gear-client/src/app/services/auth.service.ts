@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,7 @@ export class AuthService {
   private readonly baseURL = 'https://localhost:7285/api/Auth';
   private readonly tokenKey = 'auth_token';
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
 
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.baseURL}/login`, credentials).pipe(
@@ -38,6 +40,7 @@ export class AuthService {
 
   logout(): void {
     this.removeToken();
+    this.router.navigate(['/login']);
   }
 
   isLoggedIn(): boolean {

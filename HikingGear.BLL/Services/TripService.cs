@@ -80,5 +80,26 @@ namespace HikingGear.BLL.Services
 
             await _tripRepository.DeleteTripAsync(trip);
         }
+
+        public async Task<bool> UpdateTripAsync(int tripId, int userId, TripUpdateDto dto)
+        {
+            var trip = await _tripRepository.GetTripByIdAsync(tripId);
+
+            if (trip == null || trip.UserId != userId)
+                return false;
+
+            trip.Title = dto.Title;
+            trip.LocationName = dto.LocationName;
+            trip.Latitude = dto.Latitude;
+            trip.Longitude = dto.Longitude;
+            trip.StartDate = dto.StartDate;
+            trip.EndDate = dto.EndDate;
+            trip.GroupSize = dto.GroupSize;
+            trip.AccommodationFormat = dto.AccommodationFormat;
+
+            await _tripRepository.UpdateTripAsync(trip);
+
+            return true;
+        }
     }
 }

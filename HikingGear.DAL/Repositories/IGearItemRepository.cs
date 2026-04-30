@@ -9,12 +9,11 @@ namespace HikingGear.DAL.Repositories
 {
     public interface IGearItemRepository
     {
-        Task<IEnumerable<GearItem>> GetItemsByTripIdAsync(int tripId);
+        Task<IEnumerable<GearItem>> GetItemsByCategoryIdAsync(int categoryId);
+        Task<GearItem?> GetItemByIdAsync(int itemId);
         Task AddItemsAsync(IEnumerable<GearItem> items);
         Task UpdateItemAsync(GearItem item);
         Task DeleteItemAsync(GearItem item);
-        Task<int> GetOrCreateCategoryIdAsync(string categoryName);
-        Task<GearItem?> GetItemByIdAsync(int itemId);
-        Task DeleteItemsByTripIdAsync(int tripId);
+        Task DeleteItemsByCategoryIdAsync(int categoryId);
     }
 }

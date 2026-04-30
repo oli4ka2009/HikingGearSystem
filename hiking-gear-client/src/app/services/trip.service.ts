@@ -36,6 +36,10 @@ export class TripService {
     return this.http.post<any>(this.apiUrl, tripData);
   }
 
+  updateTrip(id: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, data);
+  }
+
   deleteTrip(tripId: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${tripId}`);
   }

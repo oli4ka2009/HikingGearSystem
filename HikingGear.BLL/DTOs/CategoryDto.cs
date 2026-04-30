@@ -11,6 +11,7 @@ namespace HikingGear.BLL.DTOs
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public int TripId { get; set; }
     }
 
     public class CreateCategoryDto
@@ -18,6 +19,8 @@ namespace HikingGear.BLL.DTOs
         [Required(ErrorMessage = "Назва категорії обов'язкова")]
         [MaxLength(50)]
         public string Name { get; set; } = string.Empty;
+
+        public int TripId { get; set; }
     }
 
     public class UpdateCategoryDto

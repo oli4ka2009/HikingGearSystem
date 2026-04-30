@@ -9,19 +9,16 @@ namespace HikingGear.BLL.DTOs
 {
     public class GearItemCreateDto
     {
-        public int TripId { get; set; }
-
-        [Required]
-        public string CategoryName { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
 
         [Required(ErrorMessage = "Назва речі є обов'язковою")]
         [MaxLength(100)]
         public string Name { get; set; } = string.Empty;
 
-        [Range(0, 100000, ErrorMessage = "Вага не може бути від'ємною")]
+        [Range(0, 100000)]
         public double WeightInGrams { get; set; }
 
-        [Range(1, 100, ErrorMessage = "Кількість має бути щонайменше 1")]
+        [Range(1, 100)]
         public int Quantity { get; set; }
 
         public bool IsGroupGear { get; set; }

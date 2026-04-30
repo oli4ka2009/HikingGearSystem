@@ -11,7 +11,8 @@ namespace HikingGear.DAL.Repositories
     {
         Task<IEnumerable<GearCategory>> GetAllAsync();
         Task<GearCategory?> GetByIdAsync(int id);
-        Task<GearCategory?> GetCategoryWithItemsAsync(int id);
+        Task<IEnumerable<GearCategory>> GetByTripIdAsync(int tripId);
+        Task<GearCategory?> GetByTripAndNameAsync(int tripId, string name);
         Task AddAsync(GearCategory category);
         Task UpdateAsync(GearCategory category);
         Task DeleteAsync(GearCategory category);

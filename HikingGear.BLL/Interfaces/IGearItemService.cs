@@ -10,7 +10,7 @@ namespace HikingGear.BLL.Interfaces
 {
     public interface IGearItemService
     {
-        Task<IEnumerable<GearItem>> GetGearForTripAsync(int tripId, int userId);
+        Task<TripGearResponseDto> GetGearForTripAsync(int tripId, int userId);
 
         Task<GearItem> AddCustomGearItemAsync(int userId, GearItemCreateDto dto);
         Task UpdateGearItemAsync(int userId, int itemId, GearItemUpdateDto dto);

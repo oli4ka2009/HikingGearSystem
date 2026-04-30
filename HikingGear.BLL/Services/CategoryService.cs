@@ -25,7 +25,8 @@ namespace HikingGear.BLL.Services
             return categories.Select(c => new CategoryDto
             {
                 Id = c.Id,
-                Name = c.Name
+                Name = c.Name,
+                TripId = c.TripId
             });
         }
 
@@ -41,7 +42,8 @@ namespace HikingGear.BLL.Services
         {
             var category = new GearCategory
             {
-                Name = dto.Name
+                Name = dto.Name,
+                TripId = dto.TripId
             };
 
             await _categoryRepository.AddAsync(category);

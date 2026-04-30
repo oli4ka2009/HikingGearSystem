@@ -86,5 +86,21 @@ namespace HikingGear.API.Controllers
                 return StatusCode(500, new { message = $"Помилка видалення походу: {ex.Message}" });
             }
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTrip(int id, [FromBody] TripUpdateDto dto)
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int userId = string.IsNullOrEmpty(userIdString) ? 1 : int.Parse(userIdString);
+
+            var isUpdated = await _tripService.UpdateTripAsync(id, userId, dto);
+
+            if (!isUpdated)
+            {
+                return NotFound(new { message = "Похід не знайдено, або у вас немає прав на його редагування." });
+            }
+
+            return NoContent();
+        }
     }
 }

@@ -14,6 +14,7 @@ namespace HikingGear.Models.Entities
         public string Name { get; set; } = string.Empty;
 
         public int TripId { get; set; }
+        public Trip Trip { get; set; } = null!;
 
         public ICollection<GearItem> GearItems { get; set; } = new List<GearItem>();
     }
