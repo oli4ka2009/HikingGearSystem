@@ -45,7 +45,7 @@ namespace HikingGear.BLL.Services
         public async Task<TripGearResponseDto> GenerateGearListAsync(int tripId)
         {
             var trip = await GetValidTripAsync(tripId);
-
+            /*
             // ТИМЧАСОВА ЗАГЛУШКА (MOCK) ПОКИ GOOGLE ЛЕЖИТЬ
             _logger.LogInformation("Використовуємо Mock-дані, бо Gemini API видає 503...");
             await Task.Delay(2000);
@@ -97,9 +97,8 @@ namespace HikingGear.BLL.Services
                         IsPacked = i.IsPacked
                     }).ToList()
                 }).ToList()
-            };
+            }; */
 
-            /* TODO: Розкоментувати коли Gemini API запрацює:
             var weather = await FetchWeatherAsync(trip);
             _logger.LogInformation("Отримано погоду для походу ID {TripId}: {WeatherData}",
                 tripId, JsonSerializer.Serialize(weather));
@@ -108,8 +107,24 @@ namespace HikingGear.BLL.Services
             var generatedDto = ParseGeminiResponse(aiJsonResponse);
             await SaveGeneratedGearAsync(tripId, generatedDto);
             var categories = await _categoryRepository.GetByTripIdAsync(tripId);
-            return new TripGearResponseDto { ... }; // те саме мапування
-            */
+            return new TripGearResponseDto
+            {
+                Categories = categories.Select(c => new TripCategoryDto
+                {
+                    Id = c.Id,
+                    CategoryName = c.Name,
+                    Items = c.GearItems.Select(i => new TripGearItemDto
+                    {
+                        Id = i.Id,
+                        Name = i.Name,
+                        WeightInGrams = i.WeightInGrams,
+                        Quantity = i.Quantity,
+                        IsGroupGear = i.IsGroupGear,
+                        IsWearable = i.IsWearable,
+                        IsPacked = i.IsPacked
+                    }).ToList()
+                }).ToList()
+            };
         }
 
         private async Task SaveGeneratedGearAsync(int tripId, AiGearResponseDto dto)

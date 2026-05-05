@@ -244,21 +244,12 @@ export class TripDetailsComponent implements OnInit {
   openAddItemDialog(category: { id: number; categoryName: string }): void {
     const dialogRef = this.dialog.open(GearItemDialogComponent, {
       width: '400px',
-      data: { categoryName: category.categoryName }
+      data: { categoryId: category.id, categoryName: category.categoryName }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result && this.tripId) {
-        this.gearService.addCustomGearItem(category.id, result).subscribe({
-          next: () => {
-            this.snackBar.open('Річ успішно додано', 'Закрити', { duration: 3000 });
-            this.loadTripData(Number(this.tripId));
-          },
-          error: (err) => {
-            console.error('Помилка при додаванні речі:', err);
-            this.snackBar.open('Помилка при додаванні речі', 'Закрити', { duration: 3000 });
-          }
-        });
+      if (result === true && this.tripId) {
+        this.loadTripData(Number(this.tripId));
       }
     });
   }
@@ -322,21 +313,15 @@ export class TripDetailsComponent implements OnInit {
     });
   }
 
-  openEditItemDialog(item: GearItem): void {
+  openEditItemDialog(item: GearItem, categoryId: number): void {
     const dialogRef = this.dialog.open(GearItemDialogComponent, {
       width: '400px',
-      data: { item }
+      data: { item, categoryId }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.gearService.updateGearItem(item.id, result).subscribe({
-          next: () => {
-            this.snackBar.open('Річ оновлено', 'Закрити', { duration: 3000 });
-            if (this.tripId) this.loadTripData(Number(this.tripId));
-          },
-          error: (err) => console.error('Помилка оновлення речі:', err)
-        });
+      if (result === true && this.tripId) {
+        this.loadTripData(Number(this.tripId));
       }
     });
   }

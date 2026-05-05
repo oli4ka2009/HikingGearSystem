@@ -57,17 +57,11 @@ export class DashboardComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.tripService.createTrip(result).subscribe({
-          next: () => {
-            this.snackBar.open('Подорож успішно створена', 'Закрити', { duration: 3000 });
-            this.loadTrips();
-          },
-          error: (err) => {
-            console.error('Помилка при створенні подорожі', err);
-            this.snackBar.open('Помилка при створенні подорожі', 'Закрити', { duration: 3000 });
-          }
-        });
+      // The dialog itself handles the API call and returns true upon success.
+      // We only need to refresh the list and show a notification.
+      if (result === true) {
+        this.snackBar.open('Подорож успішно створена', 'Закрити', { duration: 3000 });
+        this.loadTrips();
       }
     });
   }

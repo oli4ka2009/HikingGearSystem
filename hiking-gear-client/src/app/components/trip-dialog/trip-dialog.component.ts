@@ -294,7 +294,16 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
   save(): void {
     if (this.tripForm.valid) {
       this.serverErrors = {};
-      this.tripService.createTrip(this.tripForm.value).subscribe({
+      
+      const formValue = this.tripForm.value;
+      const payload = {
+        ...formValue,
+        // Force conversion to standard ISO string so the .NET backend can parse it safely
+        startDate: formValue.startDate ? new Date(formValue.startDate).toISOString() : null,
+        endDate: formValue.endDate ? new Date(formValue.endDate).toISOString() : null
+      };
+
+      this.tripService.createTrip(payload).subscribe({
         next: () => {
           this.dialogRef.close(true);
         },

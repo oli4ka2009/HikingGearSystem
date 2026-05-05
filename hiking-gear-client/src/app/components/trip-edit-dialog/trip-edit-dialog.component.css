@@ -1,12 +1,8 @@
 .edit-form {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-top: 10px;
-}
-
-mat-form-field {
-  margin-bottom: 8px;
+  gap: 16px;
+  padding-top: 16px;
 }
 
 .full-width {
@@ -16,7 +12,6 @@ mat-form-field {
 .form-row {
   display: flex;
   gap: 16px;
-  align-items: flex-start; /* Вирівнювання по верху, щоб сусідні поля не розтягувалися при помилках */
 }
 
 .form-row mat-form-field {
@@ -24,14 +19,49 @@ mat-form-field {
 }
 
 .map-section {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
+  margin: 8px 0;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .map-label {
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.6);
-  margin-left: 4px;
+  display: block;
+  padding: 8px 12px;
+  background: var(--color-light-mint);
+  color: var(--color-forest);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+#edit-map {
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.map-section:focus-within {
+  border-color: var(--color-forest);
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+}
+
+mat-dialog-actions {
+  padding: 16px 24px !important;
+}
+
+button[color="primary"] {
+  background-color: var(--color-forest) !important;
+  color: white !important;
+  border-radius: 30px !important;
+  padding: 0 24px !important;
+}
+
+::ng-deep .mat-mdc-dialog-title {
+  background: linear-gradient(to bottom, var(--color-light-mint), white) !important;
+  margin: 0 !important;
+  padding: 24px !important;
+  color: var(--color-forest) !important;
+  font-weight: 600 !important;
+}
+
+::ng-deep .mat-mdc-dialog-content {
+  padding: 24px !important;
 }

@@ -1,3 +1,23 @@
 .full-width {
   width: 100%;
 }
+
+form {
+  padding-top: 12px;
+}
+
+::ng-deep .mat-mdc-dialog-title {
+  background: linear-gradient(to bottom, var(--color-light-mint), white) !important;
+  margin: 0 !important;
+  padding: 20px 24px !important;
+  color: var(--color-forest) !important;
+  font-weight: 600 !important;
+}
+
+mat-dialog-actions {
+  padding: 12px 24px !important;
+}
+
+button[color="primary"] {
+  border-radius: 20px !important;
+}

@@ -1,184 +1,168 @@
-<mat-toolbar color="primary">
-  <button mat-icon-button routerLink="/dashboard" aria-label="Назад до панелі керування">
+<mat-toolbar class="main-header">
+  <button mat-icon-button routerLink="/dashboard" aria-label="Назад" style="margin-right: 16px; color: white;">
     <mat-icon>arrow_back</mat-icon>
   </button>
-  <span>Деталі походу: <strong>{{ trip()?.title || tripId }}</strong></span>
-  
-  <button mat-icon-button (click)="openEditTripDialog()" title="Редагувати деталі походу">
-    <mat-icon>edit</mat-icon>
-  </button>
-
-  @if (trip(); as t) {
-    <span style="margin-left: 16px; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
-      @switch (t.accommodationFormat) {
-        @case (AccommodationFormat.Tent) {
-          <mat-icon title="Намет">holiday_village</mat-icon> Намет
-        }
-        @case (AccommodationFormat.Shelter) {
-          <mat-icon title="Притулок">house</mat-icon> Притулок
-        }
-      }
-    </span>
-  }
+  <span class="toolbar-title">Мій Рюкзак</span>
+  <span class="spacer"></span>
 </mat-toolbar>
 
-@if (packingProgress(); as progress) {
-<mat-progress-bar mode="determinate" [value]="progress.progressPercentage"></mat-progress-bar>
-}
-
 <div class="details-container">
-  <!-- Кнопка завжди видима -->
-  <div class="actions-section">
-    <button mat-raised-button
-            color="primary"
-            class="generate-btn"
-            (click)="generateGear()"
-            [disabled]="isGenerating()">
-      @if (isGenerating()) {
-      <mat-spinner diameter="30"></mat-spinner>
-      } @else {
-      <span>
-        <mat-icon>list</mat-icon>
-        {{ gearList() ? 'Перегенерувати список' : 'Згенерувати список спорядження' }}
-      </span>
-      }
-    </button>
-
-    <button mat-stroked-button
-            color="primary"
-            class="add-category-btn"
-            (click)="openCategoryDialog()">
-      <mat-icon>add</mat-icon>
-      Додати категорію
-    </button>
+  
+  <div class="trip-hero">
+    <div class="hero-left">
+      <h1>{{ trip()?.title || 'Деталі походу' }}</h1>
+      <div class="hero-meta">
+        <span class="meta-pill">
+          <mat-icon>place</mat-icon>
+          {{ trip()?.locationName }}
+        </span>
+        <span class="meta-pill">
+          <mat-icon>calendar_today</mat-icon>
+          {{ trip()?.startDate | date:'dd/MM/yyyy' }} — {{ trip()?.endDate | date:'dd/MM/yyyy' }}
+        </span>
+      </div>
+    </div>
+    
+    <div class="hero-right">
+      <button mat-raised-button
+              class="generate-btn"
+              (click)="generateGear()"
+              [disabled]="isGenerating()">
+        @if (isGenerating()) {
+          <mat-spinner diameter="28" strokeWidth="3"></mat-spinner>
+        } @else {
+          <mat-icon>terrain</mat-icon>
+          <span>Згенерувати список</span>
+        }
+      </button>
+      
+      <button mat-stroked-button class="edit-trip-btn" (click)="openEditTripDialog()">
+        <mat-icon>edit</mat-icon>
+        Редагувати похід
+      </button>
+    </div>
   </div>
 
-  <!-- Статистика і список — тільки якщо є завантажені дані -->
   @if (packingProgress(); as progress) {
-  <div class="dashboard-progress">
-    <!-- Секція Вага -->
-    <mat-card class="progress-card">
-      <mat-card-header>
-        <mat-card-title>Вага (кг)</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="progress-line">
-          <span>Наплічник:</span>
-          <strong>{{ progress.individualPackWeightGrams / 1000 | number:'1.2-2' }}</strong>
-        </div>
-        <div class="progress-line">
-          <span>На собі:</span>
-          <strong>{{ progress.individualWornWeightGrams / 1000 | number:'1.2-2' }}</strong>
-        </div>
-        <div class="progress-line">
-          <span>Групове:</span>
-          <strong>{{ progress.groupTotalWeightGrams / 1000 | number:'1.2-2' }}</strong>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Секція Готовність -->
-    <mat-card class="progress-card">
-      <mat-card-header>
-        <mat-card-title>Готовність</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="progress-container">
-          <span class="progress-label">Загальний прогрес: {{ progress.progressPercentage }}%</span>
-          <mat-progress-bar mode="determinate" [value]="progress.progressPercentage"></mat-progress-bar>
-        </div>
-        <div class="sub-progress">
-          <span>Особисте: {{ progress.individualProgressPercentage }}%</span>
-          <span>Групове: {{ progress.groupProgressPercentage }}%</span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Секція Кількість -->
-    <mat-card class="progress-card">
-      <mat-card-header>
-        <mat-card-title>Рюкзак</mat-card-title>
-      </mat-card-header>
-      <mat-card-content class="centered-content">
-        <div class="items-counter">
-          <span class="packed-count">{{ progress.packedItems }}</span>
-          <span class="separator">/</span>
-          <span class="total-count">{{ progress.totalItems }}</span>
-        </div>
-        <span class="counter-label">речей зібрано</span>
-      </mat-card-content>
-    </mat-card>
-  </div>
-
-  <div class="gear-list-section">
-    <h2 style="text-align: center;">Згенероване спорядження</h2>
-
-    <div class="cards-grid">
-      @for (category of gearList()?.categories; track category.categoryName) {
-      <mat-card class="category-card">
-        <mat-card-header class="category-header">
-          <mat-card-title>{{ category.categoryName }}</mat-card-title>
-          <div class="category-actions">
-            <button mat-icon-button (click)="openEditCategoryDialog(category)" title="Редагувати категорію">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="deleteCategory(category)" title="Видалити категорію">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
+    <div class="dashboard-progress">
+      <!-- Weight Card -->
+      <mat-card class="progress-card">
+        <mat-card-header>
+          <mat-card-title>Вага (кг)</mat-card-title>
         </mat-card-header>
-
         <mat-card-content>
-          <mat-list>
-            @for (item of category.items; track item.id) {
-            <mat-list-item [class.packed-item]="item.isPacked" class="compact-gear-item">
-              <div class="gear-row-container">
-                <!-- ЛІВИЙ БЛОК: Інфо -->
-                <div class="gear-info-block">
-                  <mat-checkbox [checked]="item.isPacked" (change)="togglePacked(item)" class="compact-checkbox">
-                  </mat-checkbox>
-                  
-                  <div class="gear-text-column">
-                    <span class="gear-name" [class.line-through]="item.isPacked">{{ item.name }}</span>
-                    
-                    <div class="gear-sub-details">
-                      <span class="detail-item">{{ item.quantity }} шт.</span>
-                      <span class="detail-divider">•</span>
-                      <span class="detail-item">{{ item.weightInGrams }} г</span>
-                      
-                      @if (item.isWearable) {
-                        <mat-icon class="mini-status-icon wearable" title="На собі">checkroom</mat-icon>
-                      }
-                      @if (item.isGroupGear) {
-                        <span class="group-badge">👥 Групове</span>
-                      }
-                    </div>
-                  </div>
-                </div>
+          <div class="progress-line">
+            <span>Рюкзак</span>
+            <strong>{{ progress.individualPackWeightGrams / 1000 | number:'1.1-1' }}</strong>
+          </div>
+          <div class="progress-line">
+            <span>На собі</span>
+            <strong>{{ progress.individualWornWeightGrams / 1000 | number:'1.1-1' }}</strong>
+          </div>
+          <div class="progress-line">
+            <span>Групове</span>
+            <strong>{{ progress.groupTotalWeightGrams / 1000 | number:'1.1-1' }}</strong>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-                <!-- ПРАВИЙ БЛОК: Дії -->
-                <div class="gear-actions-block">
-                  <button mat-icon-button color="primary" (click)="openEditItemDialog(item)" title="Редагувати">
+      <!-- Readiness Card -->
+      <mat-card class="progress-card">
+        <mat-card-header>
+          <mat-card-title>Готовність</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="progress-container">
+            <span class="progress-label">{{ progress.progressPercentage }}% зібрано</span>
+            <mat-progress-bar mode="determinate" [value]="progress.progressPercentage" style="margin-top: 12px;"></mat-progress-bar>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Items Card -->
+      <mat-card class="progress-card">
+        <mat-card-header>
+          <mat-card-title>Речі</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="centered-content">
+          <div class="items-counter">
+            <span>{{ progress.packedItems }}</span>
+            <span style="color: #ccc; margin: 0 8px;">/</span>
+            <span>{{ progress.totalItems }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="gear-list-section">
+      <div class="section-header">
+        <h2>Список спорядження</h2>
+        <button mat-stroked-button
+                color="primary"
+                class="add-category-btn"
+                (click)="openCategoryDialog()">
+          <mat-icon>add_circle_outline</mat-icon>
+          Нова категорія
+        </button>
+      </div>
+
+      <div class="cards-grid">
+        @for (category of gearList()?.categories; track category.categoryName) {
+          <mat-card class="category-card">
+            <mat-card-header class="category-header">
+              <mat-card-title>
+                <span>{{ category.categoryName }}</span>
+                <div class="category-actions">
+                  <button mat-icon-button (click)="openEditCategoryDialog(category)" aria-label="Редагувати">
                     <mat-icon>edit</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="deleteItem(item)" title="Видалити">
+                  <button mat-icon-button color="warn" (click)="deleteCategory(category)" aria-label="Видалити">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </div>
-              </div>
-            </mat-list-item>
-            }
-          </mat-list>
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-button color="primary" (click)="openAddItemDialog(category)">
-            <mat-icon>add</mat-icon>
-            Додати річ
-          </button>
-        </mat-card-actions>
-      </mat-card>
-      }
+              </mat-card-title>
+            </mat-card-header>
+
+            <mat-card-content>
+              @for (item of category.items; track item.id) {
+                <div class="gear-item-row" [class.is-packed]="item.isPacked">
+                  <div class="item-info">
+                    <mat-checkbox [checked]="item.isPacked" (change)="togglePacked(item)" color="primary"></mat-checkbox>
+                    <div class="item-details">
+                      <div class="item-name">{{ item.name }}</div>
+                      <div class="item-meta">
+                        <span>{{ item.quantity }} шт • {{ item.weightInGrams }} г</span>
+                        <div class="badges-container">
+                          @if (item.isWearable) {
+                            <span class="item-badge">На собі</span>
+                          }
+                          @if (item.isGroupGear) {
+                            <span class="item-badge badge-group">Групове</span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="item-actions">
+                    <button mat-icon-button (click)="openEditItemDialog(item, category.id)">
+                      <mat-icon style="font-size: 18px;">edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteItem(item)">
+                      <mat-icon style="font-size: 18px;">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button mat-button color="primary" (click)="openAddItemDialog(category)" style="font-weight: 600;">
+                <mat-icon>add</mat-icon>
+                Додати річ
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        }
+      </div>
     </div>
-  </div>
   }
 </div>

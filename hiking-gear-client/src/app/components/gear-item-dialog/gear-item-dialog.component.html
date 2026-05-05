@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>{{ data?.item ? 'Редагувати річ' : 'Додати річ' }}</h2>
 <mat-dialog-content>
   <form [formGroup]="gearForm" class="gear-form">
-    <mat-form-field appearance="fill" subscriptSizing="dynamic" class="full-width">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full-width">
       <mat-label>Назва</mat-label>
       <input matInput formControlName="name" placeholder="Назва речі" />
       @if (gearForm.get('name')?.errors?.['serverError']) {
@@ -10,7 +10,7 @@
     </mat-form-field>
 
     <div class="form-row">
-      <mat-form-field appearance="fill" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Вага (г)</mat-label>
         <input matInput type="number" formControlName="weightInGrams" />
         @if (gearForm.get('weightInGrams')?.errors?.['serverError']) {
@@ -18,7 +18,7 @@
         }
       </mat-form-field>
 
-      <mat-form-field appearance="fill" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Кількість</mat-label>
         <input matInput type="number" formControlName="quantity" />
         @if (gearForm.get('quantity')?.errors?.['serverError']) {

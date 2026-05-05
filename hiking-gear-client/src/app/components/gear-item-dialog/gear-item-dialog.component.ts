@@ -38,11 +38,17 @@ export class GearItemDialogComponent implements OnInit {
     quantity: [1, [Validators.required, Validators.min(1)]],
     isGroupGear: [false],
     isWearable: [false],
+    categoryId: [null, Validators.required]
   });
 
   ngOnInit(): void {
-    if (this.data && this.data.item) {
-      this.gearForm.patchValue(this.data.item);
+    if (this.data) {
+      if (this.data.item) {
+        this.gearForm.patchValue(this.data.item);
+      }
+      if (this.data.categoryId) {
+        this.gearForm.patchValue({ categoryId: this.data.categoryId });
+      }
     }
   }
 
@@ -58,7 +64,7 @@ export class GearItemDialogComponent implements OnInit {
 
       const request = isEdit
         ? this.gearService.updateGearItem(this.data.item.id, gearData)
-        : this.gearService.addCustomGearItem(this.data.categoryId, gearData);
+        : this.gearService.addCustomGearItem(gearData.categoryId, gearData);
 
       request.subscribe({
         next: () => {

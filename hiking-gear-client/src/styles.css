@@ -1,4 +1,112 @@
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+:root {
+  --color-forest: #2E7D32;
+  --color-forest-deep: #1B5E20;
+  --color-sage: #66BB6A;
+  --color-mint: #A5D6A7;
+  --color-light-mint: #E8F5E9;
+  --color-lightest: #F4F7F4; /* Light grey with subtle green tint */
+  --color-accent-orange: #F57C00;
+  --shadow-soft: 0 8px 24px rgba(46, 125, 50, 0.08);
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.06);
+  --shadow-header: 0 4px 12px rgba(0,0,0,0.15);
+  --radius-card: 16px;
+  --radius-btn: 12px;
+}
+
+html, body { 
+  height: 100%; 
+  scroll-behavior: smooth;
+}
+
+body { 
+  margin: 0; 
+  font-family: 'Inter', sans-serif !important; 
+  background-color: var(--color-lightest);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cpath d='M0 100 Q 200 50 400 100 T 800 100 M0 200 Q 200 150 400 200 T 800 200 M0 300 Q 200 250 400 300 T 800 300 M0 400 Q 200 350 400 400 T 800 400 M0 500 Q 200 450 400 500 T 800 500 M0 600 Q 200 550 400 600 T 800 600 M0 700 Q 200 650 400 700 T 800 700' fill='none' stroke='%231B5E20' stroke-width='1' opacity='0.03'/%3E%3C/svg%3E");
+  color: #333;
+}
+
+h1, h2, h3, .mat-toolbar, .mat-mdc-card-title { 
+  font-family: 'Montserrat', sans-serif !important; 
+  font-weight: 600; 
+}
+
+p, span, div, .mat-mdc-card-subtitle, .mat-mdc-button, .mat-mdc-raised-button, 
+mat-form-field, .mat-mdc-form-field, .mat-mdc-floating-label, input, textarea, mat-label, .mat-mdc-select { 
+  font-family: 'Inter', sans-serif !important; 
+}
+
+/* Global Transitions */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-lightest);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-mint);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sage);
+}
+
+/* Material Component Overrides */
+.mat-mdc-card {
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-soft) !important;
+  border: none !important;
+  overflow: hidden;
+  background: white !important;
+}
+
+.mat-mdc-raised-button, .mat-mdc-button, .mat-mdc-outlined-button {
+  border-radius: var(--radius-btn) !important;
+}
+
+.mat-mdc-progress-bar {
+  height: 8px !important;
+  border-radius: 4px;
+}
+
+.mat-mdc-progress-bar .mdc-linear-progress__bar-inner {
+  background-color: var(--color-forest) !important;
+  background: linear-gradient(90deg, var(--color-sage), var(--color-forest)) !important;
+}
+
+/* Premium Toolbar */
+.mat-mdc-toolbar.mat-primary, .main-header {
+  background: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cpath d='M0 100 Q 200 50 400 100 T 800 100 M0 200 Q 200 150 400 200 T 800 200 M0 300 Q 200 250 400 300 T 800 300 M0 400 Q 200 350 400 400 T 800 400 M0 500 Q 200 450 400 500 T 800 500 M0 600 Q 200 550 400 600 T 800 600 M0 700 Q 200 650 400 700 T 800 700' fill='none' stroke='white' stroke-width='1' opacity='0.05'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, var(--color-forest-deep) 0%, var(--color-forest) 100%) !important;
+  box-shadow: var(--shadow-header) !important;
+  color: white !important;
+}
+
+.mat-mdc-toolbar.mat-primary .mat-mdc-button, 
+.mat-mdc-toolbar.mat-primary span,
+.main-header .mat-mdc-button,
+.main-header span {
+  color: white !important;
+}
+
+/* Global Button Shadow */
+.create-btn, .submit-btn, .generate-btn {
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3) !important;
+}
+
+/* Global Dialog styling */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 20px !important;
+}

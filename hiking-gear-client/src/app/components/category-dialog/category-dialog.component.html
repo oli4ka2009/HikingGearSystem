@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>{{ data?.id ? 'Редагувати категорію' : 'Додати категорію' }}</h2>
 <mat-dialog-content>
   <form [formGroup]="categoryForm">
-    <mat-form-field appearance="fill" class="full-width">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Назва категорії</mat-label>
       <input matInput formControlName="name" placeholder="Наприклад: Одяг" />
       @if (categoryForm.get('name')?.hasError('required')) {

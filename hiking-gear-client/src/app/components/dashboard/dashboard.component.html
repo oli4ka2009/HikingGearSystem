@@ -1,16 +1,16 @@
-<mat-toolbar color="primary">
-  <span>Hiking Gear System</span>
+<mat-toolbar class="main-header">
+  <span class="toolbar-title">Мій Рюкзак</span>
   <span class="spacer"></span>
-  <button mat-button (click)="logout()">
-    <mat-icon>logout</mat-icon>
-    Logout
+  <button mat-button (click)="logout()" class="logout-btn">
+    <mat-icon style="margin-right: 8px;">logout</mat-icon>
+    Вийти
   </button>
 </mat-toolbar>
 
 <div class="dashboard-content">
   <div class="header-row">
-    <h2>Доступні походи</h2>
-    <button mat-raised-button color="primary" (click)="createTrip()">
+    <h2>Мої походи</h2>
+    <button mat-raised-button class="create-btn" (click)="createTrip()">
       <mat-icon>add</mat-icon>
       Створити похід
     </button>
@@ -18,27 +18,52 @@
 
   <div class="trips-grid">
     @for (trip of trips(); track trip.id) {
-      <mat-card>
+      <mat-card class="trip-card">
         <mat-card-header>
           <div class="card-header-content">
             <mat-card-title>{{ trip.title }}</mat-card-title>
-            <mat-card-subtitle>{{ trip.locationName }}</mat-card-subtitle>
+            <div class="location-subtitle">
+              <mat-icon class="location-icon">place</mat-icon>
+              {{ trip.locationName }}
+            </div>
           </div>
-          <span class="spacer"></span>
-          <button mat-icon-button color="warn" (click)="deleteTrip(trip.id)" aria-label="Видалити">
-            <mat-icon>delete</mat-icon>
+          <button mat-icon-button color="warn" class="delete-btn" (click)="deleteTrip(trip.id)" aria-label="Видалити">
+            <mat-icon>delete_outline</mat-icon>
           </button>
         </mat-card-header>
         <mat-card-content>
-          <p><strong>Дати:</strong> {{ trip.startDate | date:'shortDate' }} - {{ trip.endDate | date:'shortDate' }}</p>
-          <p><strong>Група:</strong> {{ trip.groupSize }} осіб</p>
+          <div class="info-chip">
+            <mat-icon>calendar_today</mat-icon>
+            {{ trip.startDate | date:'dd/MM/yyyy' }} — {{ trip.endDate | date:'dd/MM/yyyy' }}
+          </div>
+          <div class="info-chip">
+            <mat-icon>people_outline</mat-icon>
+            Група: {{ trip.groupSize }} осіб
+          </div>
+          <div class="info-chip">
+            <mat-icon>hotel</mat-icon>
+            @switch (trip.accommodationFormat) {
+              @case (1) { Намет }
+              @case (2) { Притулок }
+              @default { Без ночівлі }
+            }
+          </div>
         </mat-card-content>
         <mat-card-actions>
-          <button mat-button color="primary" [routerLink]="['/trips', trip.id]">Деталі</button>
+          <button mat-button class="details-btn" [routerLink]="['/trips', trip.id]">
+            Деталі
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
         </mat-card-actions>
       </mat-card>
     } @empty {
-      <p>Наразі немає доступних походів.</p>
+      <div class="empty-state">
+        <svg class="empty-state-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14,6L10.25,11L13.1,14.8L11.5,16C9.81,13.75 7,10 7,10L1,18H23L14,6Z" />
+        </svg>
+        <p>Наразі немає доступних походів</p>
+        <button mat-stroked-button color="primary" (click)="createTrip()" style="border-radius: 12px;">Створити перший похід</button>
+      </div>
     }
   </div>
 </div>
