@@ -157,24 +157,7 @@
   margin-bottom: 24px;
 }
 
-.spacer {
-  flex: 1 1 auto;
-}
-
-mat-toolbar {
-  height: 72px !important;
-  padding: 0 32px !important;
-}
-
-.toolbar-title {
-  font-size: 1.6rem !important;
-  font-weight: 700 !important;
-  letter-spacing: -1px;
-}
-
 .logout-btn {
   font-weight: 600 !important;
-  border: 1px solid rgba(255,255,255,0.3) !important;
-  border-radius: 10px !important;
   padding: 0 16px !important;
 }

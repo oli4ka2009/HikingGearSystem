@@ -20,13 +20,26 @@ export interface ConfirmDialogData {
       <p>{{ data.message }}</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">{{ data.cancelText || 'Скасувати' }}</button>
-      <button mat-raised-button color="warn" (click)="onConfirm()">{{ data.confirmText || 'Видалити' }}</button>
+      <button mat-button (click)="onDismiss()">{{ data.cancelText || 'Скасувати' }}</button>
+      <button mat-flat-button color="primary" (click)="onConfirm()">{{ data.confirmText || 'Підтвердити' }}</button>
     </mat-dialog-actions>
   `,
   styles: [`
     mat-dialog-content {
       min-width: 300px;
+    }
+    mat-dialog-actions {
+      padding: 16px 24px !important;
+    }
+    button[color="primary"] {
+      border-radius: 20px !important;
+      padding: 0 24px !important;
+    }
+    button[mat-button]:not([color="primary"]), 
+    button[mat-stroked-button] {
+      border-radius: 20px !important;
+      overflow: hidden !important;
+      padding: 0 24px !important;
     }
   `]
 })
@@ -34,7 +47,7 @@ export class ConfirmDialogComponent {
   private dialogRef = inject(MatDialogRef<ConfirmDialogComponent>);
   public data: ConfirmDialogData = inject(MAT_DIALOG_DATA);
 
-  onCancel(): void {
+  onDismiss(): void {
     this.dialogRef.close(false);
   }
 

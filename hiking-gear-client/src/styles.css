@@ -87,17 +87,32 @@ mat-form-field, .mat-mdc-form-field, .mat-mdc-floating-label, input, textarea, m
 
 /* Premium Toolbar */
 .mat-mdc-toolbar.mat-primary, .main-header {
-  background: 
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'%3E%3Cpath d='M0 100 Q 200 50 400 100 T 800 100 M0 200 Q 200 150 400 200 T 800 200 M0 300 Q 200 250 400 300 T 800 300 M0 400 Q 200 350 400 400 T 800 400 M0 500 Q 200 450 400 500 T 800 500 M0 600 Q 200 550 400 600 T 800 600 M0 700 Q 200 650 400 700 T 800 700' fill='none' stroke='white' stroke-width='1' opacity='0.05'/%3E%3C/svg%3E"),
-    linear-gradient(135deg, var(--color-forest-deep) 0%, var(--color-forest) 100%) !important;
+  height: 72px !important;
+  padding: 0 32px !important;
+  background-color: var(--color-forest) !important; /* Standardize the background color */
   box-shadow: var(--shadow-header) !important;
   color: white !important;
+}
+
+.main-header .toolbar-title {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 1.6rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -1px;
+  margin-left: 12px !important;
+}
+
+.main-header .spacer {
+  flex: 1 1 auto;
 }
 
 .mat-mdc-toolbar.mat-primary .mat-mdc-button, 
 .mat-mdc-toolbar.mat-primary span,
 .main-header .mat-mdc-button,
-.main-header span {
+.main-header span,
+.main-header .mat-mdc-icon-button,
+.main-header button,
+.main-header mat-icon {
   color: white !important;
 }
 
@@ -109,4 +124,20 @@ mat-form-field, .mat-mdc-form-field, .mat-mdc-floating-label, input, textarea, m
 /* Global Dialog styling */
 .mat-mdc-dialog-container .mdc-dialog__surface {
   border-radius: 20px !important;
+}
+
+/* Fix for lingering focus circle on Material checkboxes */
+.mat-mdc-checkbox:not(:hover) .mdc-checkbox__ripple,
+.mat-mdc-checkbox:not(:hover) .mat-ripple-element,
+.mat-mdc-checkbox:not(:hover) .mat-mdc-focus-indicator {
+  opacity: 0 !important;
+  background-color: transparent !important;
+  display: none !important;
+}
+
+/* Globally fix sticky focus/ripple on all Material buttons */
+.mat-mdc-button-base:not(:hover) .mat-mdc-focus-indicator,
+.mat-mdc-button-base:not(:hover) .mat-mdc-button-persistent-ripple::before {
+  opacity: 0 !important;
+  background-color: transparent !important;
 }

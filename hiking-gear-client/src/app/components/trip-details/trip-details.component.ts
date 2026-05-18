@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,8 +9,22 @@ import { MatListModule } from '@angular/material/list';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+
 import { GearService, TripGearResponseDto, GearItem } from '../../services/gear.service';
 import { AccommodationFormat, Trip, TripService } from '../../services/trip.service';
+import { AuthService } from '../../services/auth.service';
+import { CategoryService } from '../../services/category.service';
+
+import { GearItemDialogComponent } from '../gear-item-dialog/gear-item-dialog.component';
+import { CategoryDialogComponent } from '../category-dialog/category-dialog.component';
+import { TripEditDialogComponent } from '../trip-edit-dialog/trip-edit-dialog.component';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { LoadingDialogComponent } from '../loading-dialog/loading-dialog.component';
 
 export interface PackingProgressDto {
   totalItems: number;
@@ -22,14 +36,6 @@ export interface PackingProgressDto {
   individualProgressPercentage: number;
   groupProgressPercentage: number;
 }
-
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { GearItemDialogComponent } from '../gear-item-dialog/gear-item-dialog.component';
-import { CategoryService } from '../../services/category.service';
-import { CategoryDialogComponent } from '../category-dialog/category-dialog.component';
-import { TripEditDialogComponent } from '../trip-edit-dialog/trip-edit-dialog.component';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-trip-details',
@@ -47,6 +53,9 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     MatProgressBarModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatTooltipModule,
+    MatFormFieldModule,
+    MatInputModule,
     ConfirmDialogComponent
   ],
   templateUrl: './trip-details.component.html',
@@ -54,6 +63,8 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 })
 export class TripDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
   private readonly gearService = inject(GearService);
   private readonly tripService = inject(TripService);
   private readonly categoryService = inject(CategoryService);
@@ -65,11 +76,29 @@ export class TripDetailsComponent implements OnInit {
   isGenerating = signal<boolean>(false);
   gearList = signal<TripGearResponseDto | null>(null);
   trip = signal<Trip | null>(null);
+  searchQuery = signal<string>('');
+
+  // Computed filtered list
+  filteredCategories = computed(() => {
+    const list = this.gearList();
+    const query = this.searchQuery().toLowerCase().trim();
+    
+    if (!list || !list.categories) return [];
+    if (!query) return list.categories;
+
+    return list.categories
+      .map(category => ({
+        ...category,
+        items: category.items.filter(item => 
+          item.name.toLowerCase().includes(query)
+        )
+      }))
+      .filter(category => category.items.length > 0);
+  });
 
   // Advanced Packing Statistics (Calculated from list to keep in sync)
   packingProgress = computed<PackingProgressDto | null>(() => {
     const list = this.gearList();
-    // Повертаємо null якщо даних нема — щоб @if в шаблоні приховував блок
     if (!list || !list.categories) return null;
 
     const allItems = list.categories.flatMap(c => c.items || []);
@@ -137,13 +166,13 @@ export class TripDetailsComponent implements OnInit {
   generateGear(): void {
     if (!this.tripId) return;
 
-    // Якщо список вже є, просимо підтвердження
     if (this.gearList() && this.gearList()!.categories.length > 0) {
       const dialogRef = this.dialog.open(ConfirmDialogComponent, {
         width: '350px',
         data: {
           title: 'Перегенерувати список?',
-          message: 'Ви впевнені? Це видалить всі поточні речі в цьому поході і створить новий список.'
+          message: 'Ви впевнені? Це видалить всі поточні речі в цьому поході і створить новий список.',
+          confirmText: 'Перегенерувати'
         }
       });
 
@@ -158,14 +187,21 @@ export class TripDetailsComponent implements OnInit {
   }
 
   private executeGeneration(): void {
+    const loadingRef = this.dialog.open(LoadingDialogComponent, { 
+      disableClose: true,
+      width: '300px'
+    });
+
     this.isGenerating.set(true);
     this.gearService.generateGearForTrip(Number(this.tripId)).subscribe({
       next: (response) => {
+        loadingRef.close();
         this.isGenerating.set(false);
         this.gearList.set(response);
         this.snackBar.open('Список успішно згенеровано', 'Закрити', { duration: 3000 });
       },
       error: (err) => {
+        loadingRef.close();
         this.isGenerating.set(false);
         console.error('Помилка генерації:', err);
         this.snackBar.open('Помилка при генерації списку', 'Закрити', { duration: 3000 });
@@ -199,13 +235,12 @@ export class TripDetailsComponent implements OnInit {
     const originalStatus = item.isPacked;
     const newStatus = !originalStatus;
 
-    // Optimistic update
     item.isPacked = newStatus;
     this.gearList.set({ ...this.gearList()! });
 
     this.gearService.togglePacked(item.id, newStatus).subscribe({
       error: (err) => {
-        item.isPacked = originalStatus; // Rollback
+        item.isPacked = originalStatus;
         this.gearList.set({ ...this.gearList()! });
         console.error('Помилка оновлення статусу:', err);
       }
@@ -324,5 +359,14 @@ export class TripDetailsComponent implements OnInit {
         this.loadTripData(Number(this.tripId));
       }
     });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

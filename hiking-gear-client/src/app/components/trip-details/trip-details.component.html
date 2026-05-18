@@ -1,9 +1,13 @@
 <mat-toolbar class="main-header">
-  <button mat-icon-button routerLink="/dashboard" aria-label="Назад" style="margin-right: 16px; color: white;">
+  <button mat-icon-button (click)="goBack()" matTooltip="Повернутися до походів">
     <mat-icon>arrow_back</mat-icon>
   </button>
   <span class="toolbar-title">Мій Рюкзак</span>
   <span class="spacer"></span>
+  <button mat-button class="logout-btn" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    Вийти
+  </button>
 </mat-toolbar>
 
 <div class="details-container">
@@ -28,12 +32,8 @@
               class="generate-btn"
               (click)="generateGear()"
               [disabled]="isGenerating()">
-        @if (isGenerating()) {
-          <mat-spinner diameter="28" strokeWidth="3"></mat-spinner>
-        } @else {
-          <mat-icon>terrain</mat-icon>
-          <span>Згенерувати список</span>
-        }
+        <mat-icon>terrain</mat-icon>
+        <span>Згенерувати список</span>
       </button>
       
       <button mat-stroked-button class="edit-trip-btn" (click)="openEditTripDialog()">
@@ -106,8 +106,15 @@
         </button>
       </div>
 
+      <div class="search-container">
+        <mat-form-field appearance="outline" class="search-bar" subscriptSizing="dynamic">
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput placeholder="Знайти спорядження..." (input)="searchQuery.set($any($event.target).value)">
+        </mat-form-field>
+      </div>
+
       <div class="cards-grid">
-        @for (category of gearList()?.categories; track category.categoryName) {
+        @for (category of filteredCategories(); track category.categoryName) {
           <mat-card class="category-card">
             <mat-card-header class="category-header">
               <mat-card-title>

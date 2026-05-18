@@ -39,9 +39,19 @@
 }
 
 mat-dialog-actions {
-  padding: 12px 24px !important;
+  padding: 16px 24px !important;
 }
 
 button[color="primary"] {
+  background-color: var(--color-forest) !important;
+  color: white !important;
   border-radius: 20px !important;
+  padding: 0 24px !important;
+}
+
+button[mat-button]:not([color="primary"]), 
+button[mat-stroked-button] {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  padding: 0 24px !important;
 }
