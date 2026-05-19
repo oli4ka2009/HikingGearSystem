@@ -13,10 +13,12 @@ namespace HikingGear.BLL.Services
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
+        private readonly ITripRepository _tripRepository;
 
-        public CategoryService(ICategoryRepository categoryRepository)
+        public CategoryService(ICategoryRepository categoryRepository, ITripRepository tripRepository)
         {
             _categoryRepository = categoryRepository;
+            _tripRepository = tripRepository;
         }
 
         public async Task<IEnumerable<CategoryDto>> GetAllAsync()
@@ -35,11 +37,21 @@ namespace HikingGear.BLL.Services
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null) return null;
 
-            return new CategoryDto { Id = category.Id, Name = category.Name };
+            return new CategoryDto { Id = category.Id, Name = category.Name, TripId = category.TripId };
         }
 
-        public async Task<CategoryDto> CreateAsync(CreateCategoryDto dto)
+        public async Task<CategoryDto> CreateAsync(int userId, CreateCategoryDto dto)
         {
+            // Перевірка прав власності на похід
+            var isOwner = await _tripRepository.IsUserOwnerOfTripAsync(dto.TripId, userId);
+            if (!isOwner)
+                throw new UnauthorizedAccessException("Ви не маєте доступу до цього походу.");
+
+            // Перевірка на дублікат назви в межах цього походу
+            var existing = await _categoryRepository.GetByTripAndNameAsync(dto.TripId, dto.Name);
+            if (existing != null)
+                throw new InvalidOperationException($"Категорія з назвою '{dto.Name}' вже існує в цьому поході.");
+
             var category = new GearCategory
             {
                 Name = dto.Name,
@@ -49,13 +61,26 @@ namespace HikingGear.BLL.Services
             await _categoryRepository.AddAsync(category);
             await _categoryRepository.SaveChangesAsync();
 
-            return new CategoryDto { Id = category.Id, Name = category.Name };
+            return new CategoryDto { Id = category.Id, Name = category.Name, TripId = category.TripId };
         }
 
-        public async Task<bool> UpdateAsync(int id, UpdateCategoryDto dto)
+        public async Task<bool> UpdateAsync(int userId, int id, UpdateCategoryDto dto)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null) return false;
+            if (category == null) throw new KeyNotFoundException("Категорію не знайдено.");
+
+            // Перевірка прав власності
+            var isOwner = await _tripRepository.IsUserOwnerOfTripAsync(category.TripId, userId);
+            if (!isOwner)
+                throw new UnauthorizedAccessException("Ви не маєте доступу до цієї категорії.");
+
+            // Перевірка на дублікат (якщо назва змінилась)
+            if (category.Name != dto.Name)
+            {
+                var existing = await _categoryRepository.GetByTripAndNameAsync(category.TripId, dto.Name);
+                if (existing != null)
+                    throw new InvalidOperationException($"Категорія з назвою '{dto.Name}' вже існує.");
+            }
 
             category.Name = dto.Name;
 
@@ -65,10 +90,15 @@ namespace HikingGear.BLL.Services
             return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int userId, int id)
         {
             var category = await _categoryRepository.GetByIdAsync(id);
             if (category == null) return false;
+
+            // Перевірка прав власності
+            var isOwner = await _tripRepository.IsUserOwnerOfTripAsync(category.TripId, userId);
+            if (!isOwner)
+                throw new UnauthorizedAccessException("Ви не маєте доступу до цієї категорії.");
 
             await _categoryRepository.DeleteAsync(category);
             await _categoryRepository.SaveChangesAsync();

@@ -11,8 +11,8 @@ namespace HikingGear.BLL.Interfaces
     {
         Task<IEnumerable<CategoryDto>> GetAllAsync();
         Task<CategoryDto?> GetByIdAsync(int id);
-        Task<CategoryDto> CreateAsync(CreateCategoryDto dto);
-        Task<bool> UpdateAsync(int id, UpdateCategoryDto dto);
-        Task<bool> DeleteAsync(int id);
+        Task<CategoryDto> CreateAsync(int userId, CreateCategoryDto dto);
+        Task<bool> UpdateAsync(int userId, int id, UpdateCategoryDto dto);
+        Task<bool> DeleteAsync(int userId, int id);
     }
 }

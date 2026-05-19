@@ -1,9 +1,12 @@
 ﻿using HikingGear.BLL.DTOs;
 using HikingGear.BLL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HikingGear.API.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CategoryController : ControllerBase
@@ -13,6 +16,12 @@ namespace HikingGear.API.Controllers
         public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
+        }
+
+        private int GetUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(userIdClaim, out int userId) ? userId : 0;
         }
 
         [HttpGet]
@@ -38,9 +47,19 @@ namespace HikingGear.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var createdCategory = await _categoryService.CreateAsync(dto);
-
-            return CreatedAtAction(nameof(GetCategory), new { id = createdCategory.Id }, createdCategory);
+            try
+            {
+                var createdCategory = await _categoryService.CreateAsync(GetUserId(), dto);
+                return CreatedAtAction(nameof(GetCategory), new { id = createdCategory.Id }, createdCategory);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]
@@ -49,21 +68,43 @@ namespace HikingGear.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var isUpdated = await _categoryService.UpdateAsync(id, dto);
-            if (!isUpdated)
-                return NotFound($"Категорію з ID {id} не знайдено.");
+            try
+            {
+                var isUpdated = await _categoryService.UpdateAsync(GetUserId(), id, dto);
+                if (!isUpdated)
+                    return NotFound($"Категорію з ID {id} не знайдено.");
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            var isDeleted = await _categoryService.DeleteAsync(id);
-            if (!isDeleted)
-                return NotFound($"Категорію з ID {id} не знайдено.");
+            try
+            {
+                var isDeleted = await _categoryService.DeleteAsync(GetUserId(), id);
+                if (!isDeleted)
+                    return NotFound($"Категорію з ID {id} не знайдено.");
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Forbid();
+            }
         }
     }
 }
