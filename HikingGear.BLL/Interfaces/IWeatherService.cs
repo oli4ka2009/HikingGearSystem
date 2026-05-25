@@ -9,6 +9,6 @@ namespace HikingGear.BLL.Interfaces
 {
     public interface IWeatherService
     {
-        Task<WeatherInfoDto> GetWeatherForLocationAsync(double lat, double lon, DateTime startDate, DateTime endDate);
+        Task<WeatherInfoDto> GetWeatherForLocationAsync(double lat, double lon, DateOnly startDate, DateOnly endDate);
     }
 }

@@ -20,8 +20,8 @@ namespace HikingGear.BLL.DTOs
 
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
 
         [Range(1, 50, ErrorMessage = "Розмір групи має бути від 1 до 50")]
         public int GroupSize { get; set; }
@@ -29,7 +29,7 @@ namespace HikingGear.BLL.DTOs
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (StartDate.Date < DateTime.UtcNow.Date)
+            if (StartDate < DateOnly.FromDateTime(DateTime.UtcNow))
             {
                 yield return new ValidationResult(
                     "Дата початку мандрівки не може бути в минулому.",
@@ -37,7 +37,7 @@ namespace HikingGear.BLL.DTOs
                 );
             }
 
-            if (EndDate.Date < StartDate.Date)
+            if (EndDate < StartDate)
             {
                 yield return new ValidationResult(
                     "Дата завершення мандрівки не може бути раніше дати початку.",
@@ -45,7 +45,7 @@ namespace HikingGear.BLL.DTOs
                 );
             }
 
-            var durationDays = (EndDate.Date - StartDate.Date).TotalDays;
+            var durationDays = EndDate.DayNumber - StartDate.DayNumber;
 
             if (durationDays >= 1 && AccommodationFormat == SleepFormat.None)
             {
@@ -70,8 +70,8 @@ namespace HikingGear.BLL.DTOs
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
 
         [Range(1, 50, ErrorMessage = "Розмір групи має бути від 1 до 50")]
         public int GroupSize { get; set; }
@@ -80,7 +80,7 @@ namespace HikingGear.BLL.DTOs
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (EndDate.Date < StartDate.Date)
+            if (EndDate < StartDate)
             {
                 yield return new ValidationResult(
                     "Дата завершення мандрівки не може бути раніше дати початку.",
@@ -88,7 +88,7 @@ namespace HikingGear.BLL.DTOs
                 );
             }
 
-            var durationDays = (EndDate.Date - StartDate.Date).TotalDays;
+            var durationDays = EndDate.DayNumber - StartDate.DayNumber;
 
             if (durationDays >= 1 && AccommodationFormat == SleepFormat.None)
             {

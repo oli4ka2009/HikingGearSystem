@@ -1,5 +1,5 @@
-import { Component, inject, AfterViewInit, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, AfterViewInit, OnDestroy, signal, LOCALE_ID } from '@angular/core';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -43,6 +43,7 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
   private dialogRef = inject(MatDialogRef<TripDialogComponent>);
   private tripService = inject(TripService);
   private http = inject(HttpClient);
+  private locale = inject(LOCALE_ID);
   private map!: maplibregl.Map;
   private marker?: maplibregl.Marker;
   private popup?: maplibregl.Popup;
@@ -298,9 +299,8 @@ export class TripDialogComponent implements AfterViewInit, OnDestroy {
       const formValue = this.tripForm.value;
       const payload = {
         ...formValue,
-        // Force conversion to standard ISO string so the .NET backend can parse it safely
-        startDate: formValue.startDate ? new Date(formValue.startDate).toISOString() : null,
-        endDate: formValue.endDate ? new Date(formValue.endDate).toISOString() : null
+        startDate: formValue.startDate ? formatDate(formValue.startDate, 'yyyy-MM-dd', this.locale) : null,
+        endDate: formValue.endDate ? formatDate(formValue.endDate, 'yyyy-MM-dd', this.locale) : null
       };
 
       this.tripService.createTrip(payload).subscribe({

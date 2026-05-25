@@ -22,11 +22,11 @@ namespace HikingGear.BLL.Services
                 ?? throw new InvalidOperationException("OpenWeatherMap API Key is missing.");
         }
 
-        public async Task<WeatherInfoDto> GetWeatherForLocationAsync(double lat, double lon, DateTime startDate, DateTime endDate)
+        public async Task<WeatherInfoDto> GetWeatherForLocationAsync(double lat, double lon, DateOnly startDate, DateOnly endDate)
         {
-            var now = DateTime.UtcNow.Date;
-            var daysUntilStart = (startDate.Date - now).TotalDays;
-            var daysUntilEnd = (endDate.Date - now).TotalDays;
+            var now = DateOnly.FromDateTime(DateTime.UtcNow);
+            var daysUntilStart = startDate.DayNumber - now.DayNumber;
+            var daysUntilEnd = endDate.DayNumber - now.DayNumber;
 
             if (daysUntilStart > 5 || daysUntilEnd < 0)
             {
@@ -55,9 +55,9 @@ namespace HikingGear.BLL.Services
                 foreach (var item in list.EnumerateArray())
                 {
                     var dtUnix = item.GetProperty("dt").GetInt64();
-                    var forecastDate = DateTimeOffset.FromUnixTimeSeconds(dtUnix).UtcDateTime.Date;
+                    var forecastDate = DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(dtUnix).UtcDateTime);
 
-                    if (forecastDate >= startDate.Date && forecastDate <= endDate.Date)
+                    if (forecastDate >= startDate && forecastDate <= endDate)
                     {
                         var main = item.GetProperty("main");
                         temps.Add(main.GetProperty("temp").GetDouble());

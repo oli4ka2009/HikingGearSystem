@@ -28,8 +28,8 @@ namespace HikingGear.Models.Entities
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
         public int GroupSize { get; set; }
 
         public SleepFormat AccommodationFormat { get; set; }

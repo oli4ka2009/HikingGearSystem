@@ -75,9 +75,9 @@ namespace HikingGear.Tests
         public async Task GenerateGearListAsync_GeminiApiReturnsError_ThrowsHttpRequestException()
         {
             // Arrange
-            var trip = new Trip { Id = 1, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(2) };
+            var trip = new Trip { Id = 1, StartDate = DateOnly.FromDateTime(DateTime.Now), EndDate = DateOnly.FromDateTime(DateTime.Now).AddDays(2) };
             _tripRepoMock.Setup(r => r.GetTripByIdAsync(1)).ReturnsAsync(trip);
-            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateOnly>(), It.IsAny<DateOnly>()))
                 .ReturnsAsync(new WeatherInfoDto());
 
             _httpMessageHandlerMock.Protected()
@@ -97,9 +97,9 @@ namespace HikingGear.Tests
         public async Task GenerateGearListAsync_GeminiReturnsMalformedJson_ThrowsJsonException()
         {
             // Arrange
-            var trip = new Trip { Id = 1, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(2) };
+            var trip = new Trip { Id = 1, StartDate = DateOnly.FromDateTime(DateTime.Now), EndDate = DateOnly.FromDateTime(DateTime.Now).AddDays(2) };
             _tripRepoMock.Setup(r => r.GetTripByIdAsync(1)).ReturnsAsync(trip);
-            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateOnly>(), It.IsAny<DateOnly>()))
                 .ReturnsAsync(new WeatherInfoDto());
 
             var geminiResponse = new
@@ -137,9 +137,9 @@ namespace HikingGear.Tests
         public async Task GenerateGearListAsync_GeminiReturnsEmptyCategories_ReturnsEmptyResponseDto()
         {
             // Arrange
-            var trip = new Trip { Id = 1, StartDate = DateTime.Now, EndDate = DateTime.Now.AddDays(2) };
+            var trip = new Trip { Id = 1, StartDate = DateOnly.FromDateTime(DateTime.Now), EndDate = DateOnly.FromDateTime(DateTime.Now).AddDays(2) };
             _tripRepoMock.Setup(r => r.GetTripByIdAsync(1)).ReturnsAsync(trip);
-            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateOnly>(), It.IsAny<DateOnly>()))
                 .ReturnsAsync(new WeatherInfoDto());
 
             var geminiResponse = new
@@ -186,14 +186,14 @@ namespace HikingGear.Tests
             var trip = new Trip 
             { 
                 Id = 1, 
-                StartDate = DateTime.Now, 
-                EndDate = DateTime.Now.AddDays(1),
+                StartDate = DateOnly.FromDateTime(DateTime.Now), 
+                EndDate = DateOnly.FromDateTime(DateTime.Now).AddDays(1),
                 LocationName = "Carpathians",
                 GroupSize = 2,
                 AccommodationFormat = SleepFormat.Tent
             };
             _tripRepoMock.Setup(r => r.GetTripByIdAsync(1)).ReturnsAsync(trip);
-            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateOnly>(), It.IsAny<DateOnly>()))
                 .ReturnsAsync(new WeatherInfoDto { TempDay = 15, Description = "Cloudy", IsForecastAvailable = true });
 
             var aiGearResponse = new AiGearResponseDto
@@ -271,9 +271,9 @@ namespace HikingGear.Tests
         public async Task GenerateGearListAsync_BoundaryDates_UsesMinimumOneDayDuration()
         {
             // Arrange
-            var trip = new Trip { Id = 1, StartDate = DateTime.Today, EndDate = DateTime.Today };
+            var trip = new Trip { Id = 1, StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today) };
             _tripRepoMock.Setup(r => r.GetTripByIdAsync(1)).ReturnsAsync(trip);
-            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            _weatherServiceMock.Setup(w => w.GetWeatherForLocationAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<DateOnly>(), It.IsAny<DateOnly>()))
                 .ReturnsAsync(new WeatherInfoDto());
 
             string? capturedPrompt = null;

@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, AfterViewInit, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, AfterViewInit, OnDestroy, signal, LOCALE_ID } from '@angular/core';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -42,6 +42,7 @@ export class TripEditDialogComponent implements OnInit, AfterViewInit, OnDestroy
   private dialogRef = inject(MatDialogRef<TripEditDialogComponent>);
   private tripService = inject(TripService);
   private http = inject(HttpClient);
+  private locale = inject(LOCALE_ID);
   public data = inject(MAT_DIALOG_DATA);
 
   private map!: maplibregl.Map;
@@ -302,7 +303,12 @@ export class TripEditDialogComponent implements OnInit, AfterViewInit, OnDestroy
   save(): void {
     if (this.tripForm.valid) {
       this.serverErrors = {};
-      const tripData = this.tripForm.value;
+      const formValue = this.tripForm.value;
+      const tripData = {
+        ...formValue,
+        startDate: formValue.startDate ? formatDate(formValue.startDate, 'yyyy-MM-dd', this.locale) : null,
+        endDate: formValue.endDate ? formatDate(formValue.endDate, 'yyyy-MM-dd', this.locale) : null
+      };
       const tripId = this.data.tripId;
 
       this.tripService.updateTrip(tripId, tripData).subscribe({
